@@ -4,5 +4,9 @@
 # Python
 *.pyc
 
+# PyPi
+dist/*
+pmst.egg-info/*
+
 # Personal
 docs/proposal/*
