@@ -40,4 +40,26 @@ class TestPointSource(TestCase):
 
     def test_createIsotropicPointSource(self):
         self.assertTrue(len(self.s.rays) == self.nrays)
+        self.assertTrue((self.s.origin == np.array((0, 0, 0))).all())
+        #print(self.s)
+        #print(self.s.rays[1])
 
+
+class TestPixelIntersection(TestCase):
+
+    def setUp(self):
+        # Ray travelling from origin
+        origin = np.array((0, 0, 0))
+        direction = np.array((0, np.pi/2))  # along z axis
+        polarization = np.array((1, 0))
+        self.r = pmst.source.Ray(origin, direction, polarization=polarization)
+
+        # Detector pixel
+        origin = np.array((0, 0, 1))
+        normal = np.array((0, np.pi/2))
+        dimensions = np.array((.1, .1))
+        self.p = pmst.component.Pixel(origin, normal, dimensions)
+
+        self.r.propagate([self.p])
+
+        

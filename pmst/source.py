@@ -1,6 +1,7 @@
 import numpy as np
 from random import uniform
 
+
 class Ray:
     """A polarized light ray."""
     def __init__(self, origin, direction, polarization=None):
@@ -8,15 +9,21 @@ class Ray:
         self.direction = direction
         self.polarization = polarization
 
-    def propagate(self, object):
-        # Find intersection between ray and object
-        # Update ray origin, direction, polarization
+    def propagate(self, component_list):
+        #for component in component_list:
+            # Naively go through components one at a time. Throw out ray if
+            # it doesn't intersect the first item in the component list.
+            #
+            # TO DO: Find intersection distance to all components, propagate to
+            # the closest one, then repeat until the photon is absorbed or the
+            # photon goes to inf.
+                
         return 1
 
     def __str__(self):
-        return 'O:\t'+str(self.origin)+\
-            '\nD:\t'+str(self.direction)+\
-            '\nP:\t'+str(self.polarization)+'\n'
+        return 'Origin:\t\t' + str(self.origin) + \
+            '\nDirection:\t' + str(self.direction) + \
+            '\nPolarization:\t'+str(self.polarization)+'\n'
 
 
 class Source:
@@ -28,8 +35,8 @@ class Source:
         self.rays.append(ray)
 
     def __str__(self):
-        return 'Rays:\t'+str(len(self.rays))+\
-            '\n1st ray:\n'+str(self.rays[0])+'\n'
+        return 'Rays:\t\t' + str(len(self.rays)) + \
+            '\n1st ray:\n' + str(self.rays[0]) + '\n'
 
         
 class IsotropicPointSource(Source):
@@ -49,5 +56,5 @@ class IsotropicPointSource(Source):
             self.add_ray(Ray(origin, np.array((theta, phi))))
     
     def __str__(self):
-        return 'O:\t'+str(self.origin)+'\n'+Source.__str__(self)
+        return 'Source O:\t'+str(self.origin)+'\n'+Source.__str__(self)
 
