@@ -56,4 +56,5 @@ class TestGeometry(TestCase):
         self.assertTrue(p2.intersection(r2)[0] == Point(5, 0, 0))
         r3 = Ray(Point(0, 0, 1), Point(2, 2, 1)) # Parallel
         self.assertTrue(p2.intersection(r3) == [])
-        
+        r4 = Ray(Point(0, 0, 1), Point(0, 0, 2)) # No intersection
+        self.assertTrue(p2.intersection(r4) == [])

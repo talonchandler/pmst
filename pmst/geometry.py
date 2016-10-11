@@ -111,14 +111,18 @@ class Plane:
             # If ray is parallel to the plane
             if (o.direction - o.origin).dot(self.normal) == 0:
                 return []
-            # If ray has a single intersection with the plane
+            # If ray line has a single intersection with the plane
             else:
                 p0 = self.point1
                 l0 = o.origin
                 n = self.normal
                 l = o.direction - l0
                 d = ((p0 - l0).dot(n))/(l.dot(n))
-                return [l*d + l0]
+                if d >= 0:
+                    return [l*d + l0]
+                # If ray is in wrong direction to intersect plane
+                else:
+                    return []
                 
         if isinstance(o, Plane):
             # TODO
