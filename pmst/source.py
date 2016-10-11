@@ -1,29 +1,31 @@
 import numpy as np
 from random import uniform
+from sympy import Ray3D, Point3D
 
 
-class Ray:
-    """A polarized light ray."""
-    def __init__(self, origin, direction, polarization=None):
-        self.origin = origin
-        self.direction = direction
-        self.polarization = polarization
+# Revisit this class later. Inherit from Ray3D.
+# class PolRay3D:
+#     """A polarized light ray."""
+#     def __init__(self, origin, direction, polarization=None):
+#         self.origin = origin
+#         self.direction = direction
+#         self.polarization = polarization
 
-    def propagate(self, component_list):
-        #for component in component_list:
-            # Naively go through components one at a time. Throw out ray if
-            # it doesn't intersect the first item in the component list.
-            #
-            # TO DO: Find intersection distance to all components, propagate to
-            # the closest one, then repeat until the photon is absorbed or the
-            # photon goes to inf.
+#     def propagate(self, component_list):
+#         #for component in component_list:
+#             # Naively go through components one at a time. Throw out ray if
+#             # it doesn't intersect the first item in the component list.
+#             #
+#             # TO DO: Find intersection distance to all components, propagate to
+#             # the closest one, then repeat until the photon is absorbed or the
+#             # photon goes to inf.
                 
-        return 1
+#         return 1
 
-    def __str__(self):
-        return 'Origin:\t\t' + str(self.origin) + \
-            '\nDirection:\t' + str(self.direction) + \
-            '\nPolarization:\t'+str(self.polarization)+'\n'
+#     def __str__(self):
+#         return 'Origin:\t\t' + str(self.origin) + \
+#             '\nDirection:\t' + str(self.direction) + \
+#             '\nPolarization:\t'+str(self.polarization)+'\n'
 
 
 class Source:
@@ -53,8 +55,8 @@ class IsotropicPointSource(Source):
             v = uniform(0, 1)
             theta = 2*np.pi*u
             phi = np.arccos(2*v - 1)
-            self.add_ray(Ray(origin, np.array((theta, phi))))
-    
+            self.add_ray(Ray3D(self.origin, Point3D(np.cos(theta)*np.sin(phi), np.sin(theta)*np.sin(phi), np.cos(phi), evaluate=False)))
+
     def __str__(self):
         return 'Source O:\t'+str(self.origin)+'\n'+Source.__str__(self)
 

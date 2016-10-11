@@ -1,6 +1,7 @@
 from unittest import TestCase
 import pmst.source
 import numpy as np
+from sympy import Point3D, Ray3D
 
 
 class TestSource(TestCase):
@@ -8,21 +9,18 @@ class TestSource(TestCase):
     def setUp(self):
         origin = np.array((0, 0, 0))
         direction = np.array((0, 0))
-        polarization = np.array((1, 0))
-        self.r = pmst.source.Ray(origin, direction, polarization=polarization)
-        self.r2 = pmst.source.Ray(origin, np.array((0,1)), polarization=polarization)
+        self.r = Ray3D(Point3D(0, 0, 0), Point3D(1, 1, 1))
+        self.r2 = Ray3D(Point3D(0, 0, 0), Point3D(1, 1, 2))
+        #self.r = pmst.source.Ray(origin, direction, polarization=polarization)
+        #self.r2 = pmst.source.Ray(origin, np.array((0,1)), polarization=polarization)
         
     def test_createRay(self):
-        self.assertTrue((self.r.origin == np.array((0, 0, 0))).all())
-        self.assertTrue((self.r.direction == np.array((0, 0))).all())
-        self.assertTrue((self.r.polarization == np.array((1, 0))).all())
+        self.assertTrue(self.r.source == Point3D(0, 0, 0))
+        self.assertTrue((self.r.direction_ratio == np.array([1, 1, 1])).all())
 
     def test_changeRay(self):
         self.r.direction = np.array((0, 0.1))
         self.assertTrue((self.r.direction == np.array((0, 0.1))).all())
-
-    def test_propagate(self):
-        self.assertTrue(self.r.propagate(0) == 1)
 
     def test_createSource(self):
         self.s = pmst.source.Source()
@@ -45,21 +43,3 @@ class TestPointSource(TestCase):
         #print(self.s.rays[1])
 
 
-class TestPixelIntersection(TestCase):
-
-    def setUp(self):
-        # Ray travelling from origin
-        origin = np.array((0, 0, 0))
-        direction = np.array((0, np.pi/2))  # along z axis
-        polarization = np.array((1, 0))
-        self.r = pmst.source.Ray(origin, direction, polarization=polarization)
-
-        # Detector pixel
-        origin = np.array((0, 0, 1))
-        normal = np.array((0, np.pi/2))
-        dimensions = np.array((.1, .1))
-        self.p = pmst.component.Pixel(origin, normal, dimensions)
-
-        self.r.propagate([self.p])
-
-        

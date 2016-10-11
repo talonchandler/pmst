@@ -1,26 +1,38 @@
 from unittest import TestCase
+import cProfile
+from pstats import Stats
 import pmst.microscope
 import pmst.source
 import pmst.component
 import numpy as np
+from sympy import Ray3D, Point3D, Plane
 
 
 class TestMicroscope(TestCase):
 
     def setUp(self):
-        origin = np.array((0, 0, 0))
-        normal = np.array((0, 0))
-        dimensions = np.array((.1, .2))
-        self.p = pmst.component.Pixel(origin, normal, dimensions)
+        self.r = Ray3D(Point3D(0, 0, 0), Point3D(0, 0, 1))
+        self.s = pmst.source.Source()
+        self.s.add_ray(self.r)
 
-        origin = np.array((0, 0, 0))
-        direction = np.array((0, 0))
-        polarization = np.array((1, 0))
-        self.r = pmst.source.Ray(origin, direction, polarization=polarization)
+        self.d = Plane(Point3D(0, 0, 1), normal_vector=(0, 0, 1))
 
-        self.m = pmst.microscope.Microscope(self.r)
-        self.m.add_component(self.p)
+        self.m = pmst.microscope.Microscope(self.s)
+        self.m.add_component(self.d)
         
     def test_createMicroscope(self):
         self.assertTrue(len(self.m.component_list) == 1)
-        print(self.m)
+        
+    def test_singleIntersection(self):
+        i = self.m.simulate()
+        self.assertTrue(i[0][0] == Point3D(0, 0, 1))
+        
+    def test_noIntersections(self):
+        self.m.source.rays[0] = Ray3D(Point3D(0, 0, 0), Point3D(0, 1, 0))
+        i = self.m.simulate()
+        self.assertTrue(i == [[]])
+
+    def test_isotropic(self):
+        self.m.source = pmst.source.IsotropicPointSource(Point3D(0, 0, 0), 1)
+        i = self.m.simulate()
+
