@@ -17,6 +17,9 @@ class Point():
     
     def __sub__(self, other):
         return self + (-other)
+
+    def __mul__(self, other):
+        return Point(other*self.x, other*self.y, other*self.z)
     
     def __contains__(self, other):
         return self.__eq__(other)
@@ -41,6 +44,9 @@ class Ray:
         self.origin = origin
         self.direction = direction
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
     def __contains__(self, other):
         if isinstance(other, Point):  # Is a point on a half line
             if (other == self.origin) or (other == self.direction):
@@ -50,6 +56,8 @@ class Ray:
                     return True
                 else:
                     return False
+        else:
+            raise TypeError("Can't determine if" + str(type(other)) + "is in Ray.")
         
     def __str__(self):
         return 'Ray(' + str(self.origin) + ', ' + str(self.direction) + ')'
@@ -62,29 +70,56 @@ class Plane:
         self.point1 = point1
         self.point2 = point2
         self.point3 = point3
+        self.points = [point1, point2, point3]
 
-    def __contains__(self):
-        # TODO
-        return True
-
+    def __contains__(self, other):
+        if isinstance(other, Point):  # Is a point on the plane?
+            if other in self.points:
+                return True
+            elif (other - self.point1).dot(self.normal) == 0:
+                return True
+            else:
+                return False
+        elif isinstance(other, Ray):  # Is a ray in the plane?
+            if (other.origin in self) and (other.direction in self):
+                return True
+            else:
+                return False
+        else:
+            raise TypeError("Can't determine if" + str(type(other)) + "is in Plane.")
+        
     def __str__(self):
         return 'Plane(' + str(self.point1) + ', ' + str(self.point2) + ', ' + str(self.point3) + ')'
-    
-    
+
+    @property
+    def normal(self):
+        v1 = self.point2 - self.point1
+        v2 = self.point3 - self.point1
+        return v2.cross(v1)
+
     def intersection(self, o):
         """ Returns a list of intersections with a Ray or Point."""
-
         if isinstance(o, Point):
             if o in self:
                 return [o]
             else:
                 return []
         if isinstance(o, Ray):
-            # TODO
-            return []
+            # If ray is entirely in the plane
+            if o in self:
+                return [o]
+            # If ray is parallel to the plane
+            if (o.direction - o.origin).dot(self.normal) == 0:
+                return []
+            # If ray has a single intersection with the plane
+            else:
+                p0 = self.point1
+                l0 = o.origin
+                n = self.normal
+                l = o.direction - l0
+                d = ((p0 - l0).dot(n))/(l.dot(n))
+                return [l*d + l0]
+                
         if isinstance(o, Plane):
             # TODO
             return []
-            
-        
-    
