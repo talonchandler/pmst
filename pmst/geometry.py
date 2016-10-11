@@ -27,6 +27,9 @@ class Point():
     def __str__(self):
         return 'Point(' + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z) + ')'
 
+    def __repr__(self):
+        return self.__str__()
+
     def dot(self, other):
         return self.x*other.x + self.y*other.y + self.z*other.z
 
@@ -61,7 +64,10 @@ class Ray:
         
     def __str__(self):
         return 'Ray(' + str(self.origin) + ', ' + str(self.direction) + ')'
-        
+
+    def __repr__(self):
+        return self.__str__()
+    
 
 class Plane:
     """A 2-dimensional plane in 3-dimensional space. """
@@ -91,6 +97,9 @@ class Plane:
     def __str__(self):
         return 'Plane(' + str(self.point1) + ', ' + str(self.point2) + ', ' + str(self.point3) + ')'
 
+    def __repr__(self):
+        return self.__str__()
+    
     @property
     def normal(self):
         v1 = self.point2 - self.point1

@@ -1,6 +1,6 @@
 import numpy as np
 from random import uniform
-from sympy import Ray3D, Point3D
+from pmst.geometry import Point, Ray, Plane
 
 
 # Revisit this class later. Inherit from Ray3D.
@@ -55,7 +55,7 @@ class IsotropicPointSource(Source):
             v = uniform(0, 1)
             theta = 2*np.pi*u
             phi = np.arccos(2*v - 1)
-            self.add_ray(Ray3D(self.origin, Point3D(np.cos(theta)*np.sin(phi), np.sin(theta)*np.sin(phi), np.cos(phi), evaluate=False)))
+            self.add_ray(Ray(self.origin, Point(np.cos(theta)*np.sin(phi), np.sin(theta)*np.sin(phi), np.cos(phi))))
 
     def __str__(self):
         return 'Source O:\t'+str(self.origin)+'\n'+Source.__str__(self)
