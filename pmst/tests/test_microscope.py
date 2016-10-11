@@ -1,10 +1,7 @@
 from unittest import TestCase
-import cProfile
-from pstats import Stats
 import pmst.microscope
 import pmst.source
 import pmst.component
-import numpy as np
 from sympy import Ray3D, Point3D, Plane
 
 
