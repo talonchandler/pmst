@@ -3,6 +3,9 @@ import pmst.microscope
 import pmst.source
 import pmst.component
 from pmst.geometry import Point, Ray, Plane
+import sys
+import inspect
+import numpy as np
 
 
 class TestMicroscope(TestCase):
@@ -29,8 +32,28 @@ class TestMicroscope(TestCase):
         i = self.m.simulate()
         self.assertTrue(i == [[]])
 
-    def test_isotropic(self):
+    def test_isotropic2(self):
         self.m.source = pmst.source.IsotropicPointSource(Point(0, 0, 0), 1e1)
         i = self.m.simulate()
-        print(i)
+        #print(i)
 
+    def test_isotropic(self):
+        from pmst.source import IsotropicPointSource
+        from pmst.microscope import Microscope
+        from pmst.detector import Detector
+
+        s = IsotropicPointSource(Point(0, 0, 0), n_rays=1e6)
+        m = Microscope(s)
+        center = Point(0, 0, 2)
+        x_edge = Point(5, 0, 2)
+        y_edge = Point(0, 5, 2)
+        n_pixels = 100
+        d = Detector(center, x_edge, y_edge, n_pixels, n_pixels)
+        m.add_component(d)
+        m.simulate()
+        src = inspect.getsourcelines(TestMicroscope.test_isotropic)
+        name = sys._getframe().f_code.co_name
+        m.plot_results('pmst/tests/output/' + name + '.png', src)
+
+
+        

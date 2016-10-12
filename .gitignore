@@ -10,3 +10,6 @@ pmst.egg-info/*
 
 # Personal
 docs/proposal/*
+
+# Results
+pmst/tests/output/*

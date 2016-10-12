@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Point():
     """A  point in a 3-dimensional Euclidean space."""
 
@@ -30,6 +33,10 @@ class Point():
     def __repr__(self):
         return self.__str__()
 
+    @property
+    def length(self):
+        return np.sqrt(self.x**2 + self.y**2 + self.z**2)
+
     def dot(self, other):
         return self.x*other.x + self.y*other.y + self.z*other.z
 
@@ -37,6 +44,13 @@ class Point():
         return Point(self.y*other.z - self.z*other.y,
                      self.z*other.x - self.x*other.z,
                      self.x*other.y - self.y*other.x)
+
+    # TODO
+    def are_collinear(self, *args):
+        return False
+
+    def normalize(self):
+        return Point(self.x/self.length, self.y/self.length, self.z/self.length)
 
 
 class Ray:
@@ -72,17 +86,19 @@ class Ray:
 class Plane:
     """A 2-dimensional plane in 3-dimensional space. """
 
-    def __init__(self, point1=None, point2=None, point3=None):
-        self.point1 = point1
-        self.point2 = point2
-        self.point3 = point3
-        self.points = [point1, point2, point3]
+    # TODO implement constuctor with single point and normal
+    # TODO throw error if 3 collinear points are given 
+    def __init__(self, p1, p2=None, p3=None):
+        self.p1 = p1
+        self.p2 = p2
+        self.p3 = p3
+        self.points = [p1, p2, p3]
 
     def __contains__(self, other):
         if isinstance(other, Point):  # Is a point on the plane?
             if other in self.points:
                 return True
-            elif (other - self.point1).dot(self.normal) == 0:
+            elif (other - self.p1).dot(self.normal) == 0:
                 return True
             else:
                 return False
@@ -95,15 +111,15 @@ class Plane:
             raise TypeError("Can't determine if" + str(type(other)) + "is in Plane.")
         
     def __str__(self):
-        return 'Plane(' + str(self.point1) + ', ' + str(self.point2) + ', ' + str(self.point3) + ')'
+        return 'Plane(' + str(self.p1) + ', ' + str(self.p2) + ', ' + str(self.p3) + ')'
 
     def __repr__(self):
         return self.__str__()
     
     @property
     def normal(self):
-        v1 = self.point2 - self.point1
-        v2 = self.point3 - self.point1
+        v1 = self.p2 - self.p1
+        v2 = self.p3 - self.p1
         return v2.cross(v1)
 
     def intersection(self, o):
@@ -122,7 +138,7 @@ class Plane:
                 return []
             # If ray line has a single intersection with the plane
             else:
-                p0 = self.point1
+                p0 = self.p1
                 l0 = o.origin
                 n = self.normal
                 l = o.direction - l0
