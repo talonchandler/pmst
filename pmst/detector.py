@@ -36,7 +36,7 @@ class Detector(Plane):
                 yfrac = ylen/self.yextent
                 xind = np.round((self.xnpix - 1)*xfrac + (self.xnpix/2))
                 yind = np.round((self.ynpix - 1)*yfrac + (self.ynpix/2))
-                self.pixel_values[xind, yind] += 1
+                self.pixel_values[int(xind), int(yind)] += 1
             
         return i
         
