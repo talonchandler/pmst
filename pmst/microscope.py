@@ -23,7 +23,7 @@ class Microscope:
         return intersections
 
     def plot_results(self, filename, src):
-        f, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2, figsize=(11, 8), dpi=300)
+        f, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2, figsize=(11, 8))
         # TODO Generalize this
         px = self.component_list[0].pixel_values
         
@@ -37,8 +37,6 @@ class Microscope:
         src = src.replace('_', '\_')
         src = '\\texttt{\\noindent \\\\' + src + '}'
         
-        print(src)
-        print("TEST")
         ax0.text(x=5, y=-5, s=src, ha='center', va='center', size=6)
         ax0.get_xaxis().set_visible(False)
         ax0.get_yaxis().set_visible(False)
@@ -73,7 +71,7 @@ class Microscope:
         y = 4/(4+0.05*(x-50)**2)
         #ax3.plot(x, y, '-r')
         ax3.set_aspect(aspect=100, adjustable='box')
-        f.savefig(filename)
+        f.savefig(filename, dpi=100)
         
     def __str__(self):
         return 'Components:\t'+str(len(self.component_list))+'\n'

@@ -42,7 +42,7 @@ class TestMicroscope(TestCase):
         from pmst.microscope import Microscope
         from pmst.detector import Detector
 
-        s = IsotropicPointSource(Point(0, 0, 0), n_rays=1e6)
+        s = IsotropicPointSource(Point(0, 0, 0), n_rays=1e4)
         m = Microscope(s)
         center = Point(0, 0, 2)
         x_edge = Point(5, 0, 2)
