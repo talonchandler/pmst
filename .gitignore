@@ -12,4 +12,4 @@ pmst.egg-info/*
 docs/proposal/*
 
 # Results
-pmst/tests/output/*
+*png

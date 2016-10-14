@@ -30,13 +30,11 @@ class Microscope:
         ax0.set_xlim([0, 10])
         ax0.set_ylim([-10, 0])
 
-        src = src[0][1:]
-        src = [x.lstrip() for x in src]
         src = ''.join(src)
         src = src.replace('\n', '\\\\')
         src = src.replace('_', '\_')
         src = '\\texttt{\\noindent \\\\' + src + '}'
-        
+
         ax0.text(x=5, y=-5, s=src, ha='center', va='center', size=6)
         ax0.get_xaxis().set_visible(False)
         ax0.get_yaxis().set_visible(False)
