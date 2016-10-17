@@ -41,7 +41,7 @@ class TestGeometry(TestCase):
         self.assertFalse(Point(0, 0, -1) in self.ray1)
 
     def test_plane(self):
-        self.assertTrue(self.plane1.normal == Point(1, 0, 0))
+        self.assertTrue(self.plane1.normal == Point(-1, 0, 0))
         self.assertTrue(Point(0, 0, 0) in Plane(Point(0, 0, 0), Point(0, 0, 1), Point(0, 1, 0)))
         self.assertFalse(Point(1, 1, 1) in Plane(Point(0, 0, 0), Point(0, 0, 1), Point(0, 1, 0)))
         self.assertTrue(Point(1, 4, 1) in Plane(Point(0, 0, 0), Point(1, 1, 1), Point(0, 1, 0)))

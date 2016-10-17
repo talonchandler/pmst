@@ -88,17 +88,21 @@ class Plane:
 
     # TODO implement constuctor with single point and normal
     # TODO throw error if 3 collinear points are given 
-    def __init__(self, p1, p2=None, p3=None):
-        self.p1 = p1
-        self.p2 = p2
-        self.p3 = p3
-        self.points = [p1, p2, p3]
-
+    def __init__(self, p1, p2=None, p3=None, **kwargs):
+        if p2 and p3:
+            self.p1 = p1
+            self.normal = (p2 - p1).cross(p3 - p2).normalize()
+        else:
+            n = kwargs.pop('normal', p2)
+            if isinstance(n, Point):
+                self.normal = n.normalize()
+            else:
+                raise ValueError("Either provide 3 3D points or a point with\
+                                 a normal vector.")
+            
     def __contains__(self, other):
         if isinstance(other, Point):  # Is a point on the plane?
-            if other in self.points:
-                return True
-            elif (other - self.p1).dot(self.normal) == 0:
+            if (other - self.p1).dot(self.normal) == 0:
                 return True
             else:
                 return False
@@ -108,20 +112,16 @@ class Plane:
             else:
                 return False
         else:
-            raise TypeError("Can't determine if" + str(type(other)) + "is in Plane.")
+            raise TypeError("Can't determine if" + str(type(other)) +
+                            "is in Plane.")
         
     def __str__(self):
-        return 'Plane(' + str(self.p1) + ', ' + str(self.p2) + ', ' + str(self.p3) + ')'
+        return 'Plane(' + str(self.p1) + ', ' + str(self.p2) + ', ' +\
+            str(self.p3) + ')'
 
     def __repr__(self):
         return self.__str__()
     
-    @property
-    def normal(self):
-        v1 = self.p2 - self.p1
-        v2 = self.p3 - self.p1
-        return v2.cross(v1)
-
     def intersection(self, o):
         """ Returns a list of intersections with a Ray or Point."""
         if isinstance(o, Point):

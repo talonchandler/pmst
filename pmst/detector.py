@@ -1,10 +1,11 @@
 from pmst.geometry import Point, Ray, Plane
 import numpy as np
 
+
 class Detector(Plane):
     """Plane detector with square pixels"""
     
-    def __init__(self, p1, p2, p3, xnpix, ynpix):
+    def __init__(self, p1, p2=None, p3=None, xnpix=1, ynpix=1):
         Plane.__init__(self, p1, p2, p3)
         self.xextent = 2*(p2 - p1).length
         self.yextent = 2*(p3 - p1).length
