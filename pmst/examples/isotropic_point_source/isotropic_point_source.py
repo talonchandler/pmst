@@ -3,7 +3,7 @@ from pmst.microscope import Microscope
 from pmst.detector import Detector
 from pmst.geometry import Point
 
-s = IsotropicPointSource(Point(0, 0, 0), n_rays=1e4)
+s = IsotropicPointSource(Point(0, 0, 0), n_rays=1e5)
 m = Microscope(s)
 center = Point(0, 0, 2)
 x_edge = Point(5, 0, 2)
@@ -15,5 +15,5 @@ m.simulate()
 
 with open(__file__, 'r') as myfile:
     src = myfile.readlines()
-m.plot_results('isotropic_point_source.png', src)
+m.plot_results('isotropic_point_source.png', src=src)
 
