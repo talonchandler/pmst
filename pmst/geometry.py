@@ -62,8 +62,11 @@ class Ray:
     the direction of point2."""
 
     def __init__(self, origin=None, direction=None):
-        self.origin = origin
-        self.direction = direction
+        if origin == direction:
+           raise ValueError("Provide two unique points for the origin and direction.")
+        else:
+            self.origin = origin
+            self.direction = direction
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
