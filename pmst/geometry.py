@@ -45,12 +45,16 @@ class Point():
                      self.z*other.x - self.x*other.z,
                      self.x*other.y - self.y*other.x)
 
-    # TODO
-    def are_collinear(self, *args):
-        return False
+    def is_collinear(self, p2, p3):
+        if (self - p2).cross(self - p3).length == 0:
+            return True
+        else:
+            return False
 
     def normalize(self):
-        return Point(self.x/self.length, self.y/self.length, self.z/self.length)
+        return Point(self.x/self.length,
+                     self.y/self.length,
+                     self.z/self.length)
 
 
 class Ray:
@@ -74,7 +78,8 @@ class Ray:
                 else:
                     return False
         else:
-            raise TypeError("Can't determine if" + str(type(other)) + "is in Ray.")
+            raise TypeError("Can't determine if" + str(type(other)) +
+                            "is in Ray.")
         
     def __str__(self):
         return 'Ray(' + str(self.origin) + ', ' + str(self.direction) + ')'
@@ -86,12 +91,13 @@ class Ray:
 class Plane:
     """A 2-dimensional plane in 3-dimensional space. """
 
-    # TODO implement constuctor with single point and normal
-    # TODO throw error if 3 collinear points are given 
     def __init__(self, p1, p2=None, p3=None, **kwargs):
         if p2 and p3:
-            self.p1 = p1
-            self.normal = (p2 - p1).cross(p3 - p2).normalize()
+            if p1.is_collinear(p2, p3):
+                raise ValueError("Provide 3 points that are not collinear.")
+            else:
+                self.p1 = p1
+                self.normal = (p2 - p1).cross(p3 - p2).normalize()
         else:
             n = kwargs.pop('normal', p2)
             if isinstance(n, Point):
