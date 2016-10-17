@@ -4,12 +4,14 @@ from pmst.detector import Detector
 from pmst.geometry import Point
 
 s = IsotropicPointSource(Point(0, 0, 0), n_rays=1e5)
-m = Microscope(s)
+
 center = Point(0, 0, 2)
 x_edge = Point(5, 0, 2)
 y_edge = Point(0, 5, 2)
 n_pixels = 100
 d = Detector(center, x_edge, y_edge, n_pixels, n_pixels)
+
+m = Microscope(source=s, detector=d)
 m.add_component(d)
 m.simulate()
 

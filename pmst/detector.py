@@ -17,19 +17,24 @@ class Detector(Plane):
              xnpix=100, ynpix=100)
     """
     
-    def __init__(self, p1, p2=None, p3=None, xnpix=1, ynpix=1):
-        Plane.__init__(self, p1, p2, p3)
-        self.xwidth = 2*(p2 - p1).length
-        self.ywidth = 2*(p3 - p1).length
+    def __init__(self, center, x_edge=None, y_edge=None, xnpix=1, ynpix=1):
+        Plane.__init__(self, center, x_edge, y_edge)
+        self.xwidth = 2*(x_edge - center).length
+        self.ywidth = 2*(y_edge - center).length
         self.xnpix = xnpix
         self.ynpix = ynpix
-        self.pc = p1
-        self.px = p2
-        self.py = p3
+        self.pc = center
+        self.px = x_edge
+        self.py = y_edge
 
         # Make this a property?
         self.pixel_values = np.zeros((xnpix, ynpix))
 
+    def __str__(self):
+        return ('Detector(' + str(self.pc) + ', ' + str(self.px) + ', ' +
+                str(self.py) + ', xnpix=' + str(self.xnpix) +
+                ', ynpix=' + str(self.ynpix))
+        
     def intersection(self, o):
         # Find intersections using base class method
         i = Plane.intersection(self, o)

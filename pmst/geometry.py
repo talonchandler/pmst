@@ -125,8 +125,7 @@ class Plane:
                             "is in Plane.")
         
     def __str__(self):
-        return 'Plane(' + str(self.p1) + ', ' + str(self.p2) + ', ' +\
-            str(self.p3) + ')'
+        return 'Plane(' + str(self.p1) + ', normal=' + str(self.normal) + ')'
 
     def __repr__(self):
         return self.__str__()

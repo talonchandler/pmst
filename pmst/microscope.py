@@ -1,15 +1,20 @@
 from pmst.source import Source
+from pmst.detector import Detector
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class Microscope:
     """A microscope""" 
-    def __init__(self, source):
+    def __init__(self, source, detector):
         if isinstance(source, Source):
             self.source = source
         else:
-            raise ValueError('Argument must be a Source')
-        self.component_list = []
+            raise ValueError('Source is not the correct type.')
+        if isinstance(detector, Detector):
+            self.component_list = [detector]
+        else:
+            raise ValueError('Detector is not the correct type.')
 
     def add_component(self, component):
         self.component_list.append(component)
@@ -24,8 +29,43 @@ class Microscope:
 
     def plot_results(self, filename, src='', dpi=300):
         f, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2, figsize=(11, 8))
-        # TODO Generalize this
-        px = self.component_list[0].pixel_values
+
+        # Plot source
+        ax2.add_artist(plt.Circle((self.source.origin.x, self.source.origin.z),
+                                  0.1, color='k'))
+        ax2.text(x=self.source.origin.x + 7, y=self.source.origin.z,
+                 s='Source', ha='left', va='center', size=8)
+
+        # Plot each component
+        for c in self.component_list:
+            if isinstance(c, Detector):
+                # Plot data
+                px = c.pixel_values
+                ax1.imshow(c.pixel_values, interpolation='none')
+                
+                x = range(len(px[:, int(px.shape[0]/2)-1]))
+                y = px[:, int(px.shape[0]/2)-1]
+                y = y/np.max(y)
+                ax3.step(x, y, where='mid', markersize=0, color='k')
+
+               #xfit = np.arange(0, 100, 0.1)
+               #yfit = 4/(4+0.05*(xfit-50)**2)
+               #ax3.plot(xfit, yfit, '-r')
+
+                line = plt.Line2D((-c.px.x, c.px.x),
+                                  (c.px.z, c.px.z),
+                                  color='k',
+                                  ms=0)
+
+                ax2.add_artist(line)
+                ax2.text(x=c.px.x + 2,
+                         y=c.px.z,
+                         s='Detector',
+                         ha='left',
+                         va='center',
+                         size=8)
+            else:
+                pass
         
         ax0.set_xlim([0, 10])
         ax0.set_ylim([-10, 0])
@@ -43,8 +83,6 @@ class Microscope:
         ax0.spines['bottom'].set_visible(False)
         ax0.spines['left'].set_visible(False)
         
-        ax1.imshow(px, interpolation='none')
-
         ax2.set_xlim([-10, 10])
         ax2.set_ylim([-10, 10])
         ax2.get_xaxis().set_visible(False)
@@ -54,20 +92,8 @@ class Microscope:
         ax2.spines['bottom'].set_visible(False)
         ax2.spines['left'].set_visible(False)
 
-        ax2.add_artist(plt.Circle((0,0), 0.1, color='k'))
-        ax2.add_artist(plt.Line2D((-5,5), (-2, -2), color='k', markersize=0))
-        ax2.text(x=7, y=0, s='Source', ha='left', va='center', size=8)
-        ax2.text(x=7, y=-2, s='Detector', ha='left', va='center', size=8)        
         ax2.set_aspect(aspect=1, adjustable='box')
-        
-        x = range(len(px[:, int(px.shape[0]/2)-1]))
-        y = px[:, int(px.shape[0]/2)-1]
-        y = y/np.max(y)
-        
-        ax3.step(x, y, where='mid', markersize=0, color='k')
-        x = np.arange(0, 100, 0.1)
-        y = 4/(4+0.05*(x-50)**2)
-        #ax3.plot(x, y, '-r')
+
         ax3.set_aspect(aspect=100, adjustable='box')
         f.savefig(filename, dpi=dpi)
         
