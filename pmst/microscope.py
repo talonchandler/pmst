@@ -1,6 +1,8 @@
 from pmst.source import Source
 from pmst.detector import Detector
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
