@@ -3,6 +3,7 @@ from pmst.microscope import Microscope
 from pmst.detector import Detector
 from pmst.geometry import Point
 import numpy as np
+import time; start = time.time(); print('Running...')
 
 s = DirectedPointSource(Point(0, 0, 0), n_rays=1e5, direction=Point(0, 0, 1), psi=np.pi/2)
 
@@ -20,3 +21,4 @@ with open(__file__, 'r') as myfile:
     src = myfile.readlines()
 m.plot_results('isotropic_point_source.png', src=src)
 
+print('Run time:', np.round(time.time() - start, 2), 's')
