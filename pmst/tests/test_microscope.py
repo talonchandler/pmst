@@ -2,6 +2,7 @@ from unittest import TestCase
 import pmst.microscope
 import pmst.source
 import pmst.component
+from pmst.detector import Detector
 from pmst.geometry import Point, Ray, Plane
 import sys
 import inspect
@@ -14,11 +15,8 @@ class TestMicroscope(TestCase):
         self.r = Ray(Point(0, 0, 0), Point(0, 0, 1))
         self.s = pmst.source.Source()
         self.s.add_ray(self.r)
-
-        self.d = Plane(Point(0, 0, 2), Point(1, 0, 2), Point(0, 1, 2))
-
-        self.m = pmst.microscope.Microscope(self.s)
-        self.m.add_component(self.d)
+        self.d = Detector(Point(0, 0, 2), Point(1, 0, 2), Point(0, 1, 2))
+        self.m = pmst.microscope.Microscope(self.s, self.d)
         
     def test_createMicroscope(self):
         self.assertTrue(len(self.m.component_list) == 1)
@@ -35,4 +33,4 @@ class TestMicroscope(TestCase):
     def test_isotropic2(self):
         self.m.source = pmst.source.IsotropicPointSource(Point(0, 0, 0), 1e1)
         i = self.m.simulate()
-        #print(i)
+        # print(i)

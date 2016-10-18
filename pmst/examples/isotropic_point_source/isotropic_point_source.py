@@ -1,9 +1,10 @@
-from pmst.source import IsotropicPointSource
+from pmst.source import DirectedPointSource
 from pmst.microscope import Microscope
 from pmst.detector import Detector
 from pmst.geometry import Point
+import numpy as np
 
-s = IsotropicPointSource(Point(0, 0, 0), n_rays=1e5)
+s = DirectedPointSource(Point(0, 0, 0), n_rays=1e5, direction=Point(0, 0, 1), psi=np.pi/2)
 
 center = Point(0, 0, 2)
 x_edge = Point(5, 0, 2)
