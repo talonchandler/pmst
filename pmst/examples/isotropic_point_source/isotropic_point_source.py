@@ -5,7 +5,7 @@ from pmst.geometry import Point
 import numpy as np
 import time; start = time.time(); print('Running...')
 
-s = DirectedPointSource(Point(0, 0, 0), n_rays=1e5, direction=Point(0, 0, 1), psi=np.pi/2)
+s = DirectedPointSource(Point(0, 0, 0), n_rays=1e6, direction=Point(0, 0, 1), psi=np.pi/2)
 
 center = Point(0, 0, 2)
 x_edge = Point(5, 0, 2)

@@ -47,12 +47,31 @@ class Microscope:
                 
                 x = range(len(px[:, int(px.shape[0]/2)-1]))
                 y = px[:, int(px.shape[0]/2)-1]
-                y = y/np.max(y)
+                y = y/self.source.n_rays
                 ax3.step(x, y, where='mid', markersize=0, color='k')
 
-               #xfit = np.arange(0, 100, 0.1)
-               #yfit = 4/(4+0.05*(xfit-50)**2)
-               #ax3.plot(xfit, yfit, '-r')
+                # Calculate true
+                def sa(a, b, d):
+                    alpha = a/(2*d)
+                    beta = b/(2*d)
+                    omega = 4*np.arccos(np.sqrt((1+alpha**2+beta**2)/((1+alpha**2)*(1+beta**2))))
+                    return omega
+
+                def off_frac(A, B, a, b, d):
+                    t1 = sa(2*(A+a), 2*(B+b), d)
+                    t2 = sa(2*A, 2*(B+b), d)
+                    t3 = sa(2*(A+a), 2*B, d)
+                    t4 = sa(2*A, 2*B, d)
+                    sa_off = (t1 - t2 - t3 + t4)/4
+                    return np.abs(sa_off/(4*np.pi))
+
+                pixel_width = c.xwidth/c.xnpix
+                yfit = [8*off_frac((i-50)*pixel_width, 0, pixel_width, pixel_width, 2) for i in x]
+                print(off_frac(10*pixel_width, 0, pixel_width, pixel_width, 2))
+                #print("C_FRAC:", off_frac(0, 0, 1, 1, .0001))
+                #xfit = np.arange(0, 100, 0.1)
+                #yfit = 4/(4+0.05*(xfit-50)**2)
+                ax3.step(x, yfit, where='mid', markersize=0, color='r')
 
                 line = plt.Line2D((-c.px.x, c.px.x),
                                   (c.px.z, c.px.z),
@@ -96,7 +115,7 @@ class Microscope:
 
         ax2.set_aspect(aspect=1, adjustable='box')
 
-        ax3.set_aspect(aspect=100, adjustable='box')
+        #ax3.set_aspect(aspect=100, adjustable='box')
         f.savefig(filename, dpi=dpi)
         
     def __str__(self):
