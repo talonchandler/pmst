@@ -34,11 +34,11 @@ class Detector(Plane):
         return ('Detector(' + str(self.pc) + ', ' + str(self.px) + ', ' +
                 str(self.py) + ', xnpix=' + str(self.xnpix) +
                 ', ynpix=' + str(self.ynpix))
-        
+
     def intersection(self, o):
         # Find intersections using base class method
         i = Plane.intersection(self, o)
-
+        
         if len(i) == 1:
             i0 = (i[0] - self.pc)
             x0 = (self.px - self.pc).normalize()
@@ -61,4 +61,7 @@ class Detector(Plane):
             pass
         
         return i
+
+    def propagate(self, o):
+        return o
         

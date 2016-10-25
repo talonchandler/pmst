@@ -132,6 +132,8 @@ class Plane:
     
     def intersection(self, o):
         """ Returns a list of intersections with a Ray or Point."""
+        print("HEREx!:", self, o)
+      
         if isinstance(o, Point):
             if o in self:
                 return [o]

@@ -1,5 +1,6 @@
 from pmst.source import Source
 from pmst.detector import Detector
+from functools import reduce
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -23,11 +24,29 @@ class Microscope:
 
     def simulate(self):
         intersections = []
-        for ray in self.source.rays:
-            for component in self.component_list:
-                intersections.append(component.intersection(ray))
 
+
+        print("TEST")
+        print(self.source.rays)
+        # Populate function list (return bound methods)
+        # Alternate intersection and propagation functions
+        func_list = []
+        for component in self.component_list:
+            func_list.append(component.intersection)
+            func_list.append(component.propagate)
+
+        print("TESTER", func_list)
+        # Run each function on each ray
+        intersections = [reduce(lambda v, f: f(v), func_list, ray) for ray in self.source.rays]
+        
         return intersections
+
+        # Old code
+        # intersections = []
+        # for ray in self.source.rays:
+        #     for component in self.component_list:
+        #         intersections.append(component.intersection(ray))
+
 
     def plot_results(self, filename, src='', dpi=300):
         f, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2, figsize=(11, 8))
@@ -67,7 +86,7 @@ class Microscope:
 
                 pixel_width = c.xwidth/c.xnpix
                 yfit = [8*off_frac((i-50)*pixel_width, 0, pixel_width, pixel_width, 2) for i in x]
-                print(off_frac(10*pixel_width, 0, pixel_width, pixel_width, 2))
+                #print(off_frac(10*pixel_width, 0, pixel_width, pixel_width, 2))
                 #print("C_FRAC:", off_frac(0, 0, 1, 1, .0001))
                 #xfit = np.arange(0, 100, 0.1)
                 #yfit = 4/(4+0.05*(xfit-50)**2)

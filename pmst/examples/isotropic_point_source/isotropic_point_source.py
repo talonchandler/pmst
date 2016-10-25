@@ -5,7 +5,7 @@ from pmst.geometry import Point
 import numpy as np
 import time; start = time.time(); print('Running...')
 
-s = DirectedPointSource(Point(0, 0, 0), n_rays=1e6, direction=Point(0, 0, 1), psi=np.pi/2)
+s = DirectedPointSource(Point(0, 0, 0), n_rays=1, direction=Point(0, 0, 1), psi=np.pi/2)
 
 center = Point(0, 0, 2)
 x_edge = Point(5, 0, 2)
@@ -14,7 +14,7 @@ n_pixels = 100
 d = Detector(center, x_edge, y_edge, n_pixels, n_pixels)
 
 m = Microscope(source=s, detector=d)
-m.add_component(d)
+#m.add_component(d)
 m.simulate()
 
 with open(__file__, 'r') as myfile:
