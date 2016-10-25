@@ -35,12 +35,17 @@ class Detector(Plane):
                 str(self.py) + ', xnpix=' + str(self.xnpix) +
                 ', ynpix=' + str(self.ynpix))
 
-    def intersection(self, o):
-        # Find intersections using base class method
-        i = Plane.intersection(self, o)
+    def intersect(self, o):
+        # Make this so that it returns a single ray
         
-        if len(i) == 1:
-            i0 = (i[0] - self.pc)
+        # Find intersections using base class method
+        o = Plane.intersect(self, o)
+
+        if o is None:
+            return None
+        else:
+            # Increment pixels as needed
+            i0 = (o.origin - self.pc)
             x0 = (self.px - self.pc).normalize()
             y0 = (self.py - self.pc).normalize()
             xlen = i0.dot(x0)
@@ -55,12 +60,8 @@ class Detector(Plane):
                 xind = np.round((self.xnpix - 1)*(0.5 + xfrac))
                 yind = np.round((self.ynpix - 1)*(0.5 + yfrac))
                 self.pixel_values[int(xind), int(yind)] += 1
-        elif len(i) == 2:
-            assert("Warning: Ray intersects the detector twice!")
-        else:
-            pass
-        
-        return i
+
+            return o
 
     def propagate(self, o):
         return o

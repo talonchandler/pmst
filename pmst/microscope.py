@@ -9,44 +9,30 @@ import matplotlib.pyplot as plt
 
 class Microscope:
     """A microscope""" 
-    def __init__(self, source, detector):
+    def __init__(self, source):
+        self.component_list = []
         if isinstance(source, Source):
             self.source = source
         else:
             raise ValueError('Source is not the correct type.')
-        if isinstance(detector, Detector):
-            self.component_list = [detector]
-        else:
-            raise ValueError('Detector is not the correct type.')
 
     def add_component(self, component):
         self.component_list.append(component)
 
     def simulate(self):
-        intersections = []
-
-
-        print("TEST")
-        print(self.source.rays)
         # Populate function list (return bound methods)
         # Alternate intersection and propagation functions
         func_list = []
         for component in self.component_list:
-            func_list.append(component.intersection)
+            func_list.append(component.intersect)
             func_list.append(component.propagate)
 
-        print("TESTER", func_list)
+        #print('HERE:', func_list[0](self.source.rays[0]))
+        #print('HERE:', func_list[1](func_list[0](self.source.rays[0])))
+        #print('HERE:', func_list[2](func_list[1](func_list[0](self.source.rays[0]))))
+        #print(func_list[2])
         # Run each function on each ray
-        intersections = [reduce(lambda v, f: f(v), func_list, ray) for ray in self.source.rays]
-        
-        return intersections
-
-        # Old code
-        # intersections = []
-        # for ray in self.source.rays:
-        #     for component in self.component_list:
-        #         intersections.append(component.intersection(ray))
-
+        [reduce(lambda v, f: f(v), func_list, ray) for ray in self.source.rays]
 
     def plot_results(self, filename, src='', dpi=300):
         f, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2, figsize=(11, 8))
@@ -59,6 +45,9 @@ class Microscope:
 
         # Plot each component
         for c in self.component_list:
+            c = self.component_list[1]  # temporary choose first
+            print(c)
+            print(np.max(c.pixel_values))
             if isinstance(c, Detector):
                 # Plot data
                 px = c.pixel_values

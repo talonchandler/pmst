@@ -130,22 +130,24 @@ class Plane:
     def __repr__(self):
         return self.__str__()
     
-    def intersection(self, o):
+    def intersect(self, o):
+        """ Change this function to return just the new ray. """
+
         """ Returns a list of intersections with a Ray or Point."""
-        print("HEREx!:", self, o)
-      
         if isinstance(o, Point):
             if o in self:
-                return [o]
+                return o
             else:
-                return []
+                print("POINT")                
+                return None
         if isinstance(o, Ray):
             # If ray is entirely in the plane
             if o in self:
-                return [o]
+                return o
             # If ray is parallel to the plane
             if (o.direction - o.origin).dot(self.normal) == 0:
-                return []
+                print("PARALLEL")
+                return None
             # If ray line has a single intersection with the plane
             else:
                 p0 = self.p1
@@ -154,11 +156,13 @@ class Plane:
                 l = o.direction - l0
                 d = ((p0 - l0).dot(n))/(l.dot(n))
                 if d >= 0:
-                    return [l*d + l0]
+                    new_o = l*d + l0
+                    return Ray(origin=new_o, direction=(new_o + o.direction))
                 # If ray is in wrong direction to intersect plane
                 else:
-                    return []
+                    print("Wrong direction")
+                    return None
                 
         if isinstance(o, Plane):
             # TODO
-            return []
+            return None

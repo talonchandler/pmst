@@ -51,15 +51,15 @@ class TestGeometry(TestCase):
         self.assertTrue(Ray(Point(-3, -3, -3), Point(1, 17, 1)) in Plane(Point(0, 0, 0), Point(1, 1, 1), Point(0, 1, 0)))
         self.assertRaises(ValueError, Plane, Point(0, 0, 0), Point(1, 1, 1), Point(2, 2, 2))
 
-    def test_intersection(self):
+    def test_intersect(self):
         p = Plane(Point(0, 0, 0), Point(1, 1, 1), Point(0, 0, 1))
-        self.assertTrue(p.intersection(Point(7, 7, 7)))
+        self.assertTrue(p.intersect(Point(7, 7, 7)))
         r = Ray(Point(0, 0, 0), Point(2, 2, -10)) # In plane
-        self.assertTrue(p.intersection(r)[0] == r)
+        self.assertTrue(p.intersect(r)[0] == r)
         p2 = Plane(Point(0, 0, 0), Point(0, 1, 0), Point(1, 1, 0))
-        r2 = Ray(Point(10, 0, 1), Point(0, 0, -1)) # Single intersection
-        self.assertTrue(p2.intersection(r2)[0] == Point(5, 0, 0))
+        r2 = Ray(Point(10, 0, 1), Point(0, 0, -1)) # Single intersect
+        self.assertTrue(p2.intersect(r2)[0] == Point(5, 0, 0))
         r3 = Ray(Point(0, 0, 1), Point(2, 2, 1)) # Parallel
-        self.assertTrue(p2.intersection(r3) == [])
-        r4 = Ray(Point(0, 0, 1), Point(0, 0, 2)) # No intersection
-        self.assertTrue(p2.intersection(r4) == [])
+        self.assertTrue(p2.intersect(r3) == [])
+        r4 = Ray(Point(0, 0, 1), Point(0, 0, 2)) # No intersect
+        self.assertTrue(p2.intersect(r4) == [])
