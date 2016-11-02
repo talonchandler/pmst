@@ -38,7 +38,8 @@ class DirectedPointSource(Source):
         self.direction = direction
         self.psi = psi
 
-        for n in range(int(n_rays)):
+    def generate_rays(self):
+        for n in range(int(self.n_rays)):
             # Generate random directions on a portion of a sphere
             # See: http://mathworld.wolfram.com/SpherePointPicking.html
             u = uniform(0, 1)

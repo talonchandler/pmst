@@ -20,6 +20,9 @@ class Microscope:
         self.component_list.append(component)
 
     def simulate(self):
+        # Generate rays
+        self.source.generate_rays()
+        
         # Populate function list (return bound methods)
         # Alternate intersection and propagation functions
         func_list = []
@@ -27,10 +30,6 @@ class Microscope:
             func_list.append(component.intersect)
             func_list.append(component.propagate)
 
-        #print('HERE:', func_list[0](self.source.rays[0]))
-        #print('HERE:', func_list[1](func_list[0](self.source.rays[0])))
-        #print('HERE:', func_list[2](func_list[1](func_list[0](self.source.rays[0]))))
-        #print(func_list[2])
         # Run each function on each ray
         [reduce(lambda v, f: f(v), func_list, ray) for ray in self.source.rays]
 
