@@ -45,7 +45,7 @@ class Microscope:
 
         # Generate rays
         n = self.source.n_rays
-
+        n = int(1e7)
         ## Origin
         x0 = gpuarray.empty(n, np.float32)
         y0 = gpuarray.empty(n, np.float32)
@@ -84,7 +84,58 @@ class Microscope:
         calc_dir(x0, y0, z0, x1, y1, z1, u1, u2, 3.0, np.pi)
 
         # Populate function list (return bound methods)
+
+        # Detector
+        cx = gpuarray.empty(n, np.float32)
+        cy = gpuarray.empty(n, np.float32)
+        cz = gpuarray.empty(n, np.float32)
+        cx.fill(self.component_list[0].p1.x)
+        cy.fill(self.component_list[0].p1.y)
+        cz.fill(self.component_list[0].p1.z)
+
+        nx = gpuarray.empty(n, np.float32)
+        ny = gpuarray.empty(n, np.float32)
+        nz = gpuarray.empty(n, np.float32)
+        nx.fill(self.component_list[0].normal.x)
+        ny.fill(self.component_list[0].normal.y)
+        nz.fill(self.component_list[0].normal.z)
+        
+        intersect = ElementwiseKernel(
+            '''
+            float *x0, float *y0, float *z0,
+            float *x1, float *y1, float *z1,
+            float *cx, float *cy, float *cz,
+            float *nx, float *ny, float *nz
+            ''',
+            '''
+            float lx = x1[i] - x0[i];
+            float ly = y1[i] - y0[i];
+            float lz = z1[i] - z0[i];
+            float p0minl0x = cx[0] - x0[i];
+            float p0minl0y = cy[0] - y0[i];
+            float p0minl0z = cz[0] - z0[i];
+            float num = p0minl0x*nx[i] + p0minl0y*ny[i] + p0minl0z*nz[i];
+            float den = lx*nx[i] + ly*ny[i] + lz*nz[i];
+            float d = num/den;
+            x0[i] += lx*d;
+            y0[i] += ly*d;
+            z0[i] += lz*d;
+            x1[i] += x0[i];
+            y1[i] += y0[i];
+            z1[i] += z0[i];
+            ''',
+            "intersect")
+
+        intersect(x0, y0, z0, x1, y1, z1, cx, cy, cz, nx, ny, nz)
+        
         # Run each function on each ray
+
+        # Histogram results (todo for non-z-aligned planes)
+        bins = (self.component_list[0].xnpix, self.component_list[0].ynpix)
+        bins = (5, 5)
+        pxrange = [[-100, 100],[-100, 100]]
+        (hist, xedges, yedges) = np.histogram2d(x0.get(), y0.get(), bins=bins, range=pxrange)
+        return hist
         
     def plot_results(self, filename, src='', dpi=300):
         f, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2, figsize=(11, 8))

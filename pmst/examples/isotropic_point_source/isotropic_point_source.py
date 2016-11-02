@@ -5,7 +5,7 @@ from pmst.geometry import Point
 import numpy as np
 import time; start = time.time(); print('Running...')
 
-s = DirectedPointSource(Point(0, 0, 0), n_rays=10, direction=Point(0, 0, 1), psi=np.pi/2)
+s = DirectedPointSource(Point(0, 0, 0), n_rays=1e3, direction=Point(0, 0, 1), psi=np.pi/2)
 
 center = Point(0, 0, 2)
 x_edge = Point(5, 0, 2)
@@ -17,8 +17,13 @@ d2 = Detector(Point(0, 0, 3), Point(5, 0, 3), Point(0, 5, 3), n_pixels, n_pixels
 m = Microscope(source=s)
 m.add_component(d)
 m.add_component(d2)
+import time
+t1 = time.time()
 m.simulate()
-m.simulate_gpu()
+print("CPU: ", time.time() - t1)
+t2 = time.time()
+hist = m.simulate_gpu()
+print("GPU: ", time.time() - t2)
 
 with open(__file__, 'r') as myfile:
     src = myfile.readlines()
