@@ -33,6 +33,59 @@ class Microscope:
         # Run each function on each ray
         [reduce(lambda v, f: f(v), func_list, ray) for ray in self.source.rays]
 
+    def simulate_gpu(self):
+        # Load gpu
+        import pycuda.gpuarray as gpuarray
+        import pycuda.driver as cuda
+        import pycuda.autoinit
+        import pycuda.gpuarray as gpuarray
+        import pycuda.cumath as cumath
+        from pycuda.curandom import rand as curand
+        from pycuda.elementwise import ElementwiseKernel
+
+        # Generate rays
+        n = self.source.n_rays
+
+        ## Origin
+        x0 = gpuarray.empty(n, np.float32)
+        y0 = gpuarray.empty(n, np.float32)
+        z0 = gpuarray.empty(n, np.float32)
+        x0.fill(self.source.origin.x)
+        y0.fill(self.source.origin.y)
+        z0.fill(self.source.origin.z)
+        
+        ## Directions
+        x1 = gpuarray.zeros(n, np.float32)
+        y1 = gpuarray.zeros(n, np.float32)
+        z1 = gpuarray.zeros(n, np.float32)
+        u1 = curand((n,))
+        u2 = curand((n,))
+        out = gpuarray.zeros(n, np.float32)
+        calc_dir = ElementwiseKernel(
+            '''
+            float *x0, float *y0, float *z0, 
+            float *x1, float *y1, float *z1, 
+            float *u1, float *u2, 
+            float psi, float pi
+            ''',
+            '''
+            float theta;
+            float phi_prime;
+            float phi;
+            theta = 2*pi*u1[i];
+            phi_prime = acos(2*u2[i] -1);
+            phi = phi_prime*psi/pi;
+            x1[i] = x0[i] + cos(theta)*sin(phi);
+            y1[i] = y0[i] + sin(theta)*sin(phi);
+            z1[i] = z0[i] + cos(phi);
+            ''',
+            "calc_dir")
+        
+        calc_dir(x0, y0, z0, x1, y1, z1, u1, u2, 3.0, np.pi)
+
+        # Populate function list (return bound methods)
+        # Run each function on each ray
+        
     def plot_results(self, filename, src='', dpi=300):
         f, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2, figsize=(11, 8))
 

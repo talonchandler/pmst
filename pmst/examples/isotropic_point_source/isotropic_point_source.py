@@ -18,6 +18,7 @@ m = Microscope(source=s)
 m.add_component(d)
 m.add_component(d2)
 m.simulate()
+m.simulate_gpu()
 
 with open(__file__, 'r') as myfile:
     src = myfile.readlines()
