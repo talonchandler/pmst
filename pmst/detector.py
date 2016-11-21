@@ -1,6 +1,34 @@
 from pmst.geometry import Point, Ray, Plane
 import numpy as np
 
+import pycuda.gpuarray as gpuarray
+import pycuda.driver as cuda
+import pycuda.autoinit
+import pycuda.gpuarray as gpuarray
+import pycuda.cumath as cumath
+from pycuda.curandom import rand as curand
+from pycuda.elementwise import ElementwiseKernel
+
+class Doubler():
+    def propagate(self, ray_list):
+        doubler = ElementwiseKernel(
+            '''
+            float *x0, float *y0, float *z0,
+            float *x1, float *y1, float *z1
+            ''',
+            '''
+            x0[i] = 2*x0[i];
+            y0[i] = 2*y0[i];
+            z0[i] = 2*z0[i];
+            x1[i] = 2*x1[i];
+            y1[i] = 2*y1[i];
+            z1[i] = 2*z1[i];
+            ''',
+            "doubler")
+
+        doubler(ray_list[0], ray_list[1], ray_list[2], ray_list[3], ray_list[4], ray_list[5])
+        return ray_list
+
 
 class Detector(Plane):
     """Square plane detector with square pixels.

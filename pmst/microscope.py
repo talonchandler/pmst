@@ -136,7 +136,32 @@ class Microscope:
         pxrange = [[-100, 100],[-100, 100]]
         (hist, xedges, yedges) = np.histogram2d(x0.get(), y0.get(), bins=bins, range=pxrange)
         return hist
+
+    def simulate_gpu2(self):
+        # Load gpu
+        import pycuda.gpuarray as gpuarray
+        import pycuda.driver as cuda
+        import pycuda.autoinit
+        import pycuda.gpuarray as gpuarray
+        import pycuda.cumath as cumath
+        from pycuda.curandom import rand as curand
+        from pycuda.elementwise import ElementwiseKernel
+
+        # Generate rays
+        self.source.generate_rays()
         
+        # Populate function list (return bound methods)
+        # Alternate intersection and propagation functions
+        func_list = []
+        for component in self.component_list:
+            func_list.append(component.propagate)
+
+        # Run each function on the ray_list
+        #[reduce(lambda v, f: f(v), func_list, ray) for ray in self.source.rays]
+        reduce(lambda v, f: f(v), func_list, self.source.ray_list)
+        print(self.source.ray_list)
+        
+    
     def plot_results(self, filename, src='', dpi=300):
         f, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2, figsize=(11, 8))
 
