@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../../")
+
 from unittest import TestCase
 from pmst.detector import Detector
 from pmst.geometry import Point, Ray, Plane

@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../../")
+
 from unittest import TestCase
 import pmst.component
 import numpy as np

@@ -1,4 +1,3 @@
-from pmst.source import Source
 from pmst.detector import Detector
 from functools import reduce
 import numpy as np
@@ -11,10 +10,6 @@ class Microscope:
     """A microscope""" 
     def __init__(self, source):
         self.component_list = []
-        if isinstance(source, Source):
-            self.source = source
-        else:
-            raise ValueError('Source is not the correct type.')
 
     def add_component(self, component):
         self.component_list.append(component)
