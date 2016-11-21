@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../../../")
+
 from pmst.source import DirectedPointSource
 from pmst.microscope import Microscope
 from pmst.detector import Detector
