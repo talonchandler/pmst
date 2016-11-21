@@ -157,9 +157,19 @@ class Microscope:
             func_list.append(component.propagate)
 
         # Run each function on the ray_list
-        #[reduce(lambda v, f: f(v), func_list, ray) for ray in self.source.rays]
-        reduce(lambda v, f: f(v), func_list, self.source.ray_list)
-        print(self.source.ray_list)
+        detector_values = []
+        ray_list = self.source.ray_list
+        f = lambda f, v: f(v)
+        for func in func_list:
+            ray_list, pixel_values = f(func, ray_list)
+            detector_values.append(pixel_values)
+
+
+        # reduce(lambda v, f: f(v), func_list, self.source.ray_list)
+        
+        print(ray_list)
+        print(detector_values)        
+        
         
     
     def plot_results(self, filename, src='', dpi=300):

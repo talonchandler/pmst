@@ -27,8 +27,11 @@ class Doubler():
             "doubler")
 
         doubler(ray_list[0], ray_list[1], ray_list[2], ray_list[3], ray_list[4], ray_list[5])
-        return ray_list
+        return ray_list, None
 
+class DetectorGPU():
+    def propagate(self, ray_list):
+        return ray_list, np.ones((100, 100))
 
 class Detector(Plane):
     """Square plane detector with square pixels.
