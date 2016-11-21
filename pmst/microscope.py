@@ -10,6 +10,7 @@ class Microscope:
     """A microscope""" 
     def __init__(self, source):
         self.component_list = []
+        self.source = source
 
     def add_component(self, component):
         self.component_list.append(component)
@@ -134,13 +135,13 @@ class Microscope:
 
     def simulate_gpu2(self):
         # Load gpu
-        import pycuda.gpuarray as gpuarray
-        import pycuda.driver as cuda
-        import pycuda.autoinit
-        import pycuda.gpuarray as gpuarray
-        import pycuda.cumath as cumath
-        from pycuda.curandom import rand as curand
-        from pycuda.elementwise import ElementwiseKernel
+        # import pycuda.gpuarray as gpuarray
+        # import pycuda.driver as cuda
+        # import pycuda.autoinit
+        # import pycuda.gpuarray as gpuarray
+        # import pycuda.cumath as cumath
+        # from pycuda.curandom import rand as curand
+        # from pycuda.elementwise import ElementwiseKernel
 
         # Generate rays
         self.source.generate_rays()

@@ -52,7 +52,7 @@ class DirectedPointSource:
         u1 = curand((n,))
         u2 = curand((n,))
         out = gpuarray.zeros(n, np.float32)
-        # TODO: Handle psi > pi        
+        # TODO: Handle psi > pi
         calc_dir = ElementwiseKernel(
             '''
             float *x0, float *y0, float *z0, 
