@@ -1,10 +1,15 @@
-from pmst.detector import Detector
+from pmst.detector import DetectorGPU
 from functools import reduce
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+# from matplotlib import rc
+# rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+# ## for Palatino and other serif fonts use:
+# #rc('font',**{'family':'serif','serif':['Palatino']})
+# rc('text', usetex=True)
 
 class Microscope:
     """A microscope""" 
@@ -134,14 +139,6 @@ class Microscope:
         return hist
 
     def simulate_gpu2(self):
-        # Load gpu
-        # import pycuda.gpuarray as gpuarray
-        # import pycuda.driver as cuda
-        # import pycuda.autoinit
-        # import pycuda.gpuarray as gpuarray
-        # import pycuda.cumath as cumath
-        # from pycuda.curandom import rand as curand
-        # from pycuda.elementwise import ElementwiseKernel
 
         # Generate rays
         self.source.generate_rays()
@@ -153,19 +150,17 @@ class Microscope:
             func_list.append(component.propagate)
 
         # Run each function on the ray_list
-        detector_values = []
         ray_list = self.source.ray_list
         f = lambda f, v: f(v)
-        for func in func_list:
+
+        print(ray_list)          
+        for i, func in enumerate(func_list):
             ray_list, pixel_values = f(func, ray_list)
-            detector_values.append(pixel_values)
+            if pixel_values is not None:
+                self.component_list[i].pixel_values = pixel_values
 
-
-        # reduce(lambda v, f: f(v), func_list, self.source.ray_list)
-        
-        print(ray_list)
-        print(detector_values)        
-        
+        # print(ray_list)
+        # print(pixel_values)        
         
     
     def plot_results(self, filename, src='', dpi=300):
@@ -176,16 +171,18 @@ class Microscope:
                                   0.1, color='k'))
         ax2.text(x=self.source.origin.x + 7, y=self.source.origin.z,
                  s='Source', ha='left', va='center', size=8)
+        print("1", self.source.origin.x)
 
         # Plot each component
         for c in self.component_list:
-            c = self.component_list[1]  # temporary choose first
             print(c)
+            print(c.pixel_values)
             print(np.max(c.pixel_values))
-            if isinstance(c, Detector):
+            if isinstance(c, DetectorGPU):
+                print("HELLO")
                 # Plot data
                 px = c.pixel_values
-                ax1.imshow(c.pixel_values, interpolation='none')
+                ax1.imshow(c.pixel_values, interpolation='none', cmap='Greys_r')
                 
                 x = range(len(px[:, int(px.shape[0]/2)-1]))
                 y = px[:, int(px.shape[0]/2)-1]
@@ -221,24 +218,26 @@ class Microscope:
                                   ms=0)
 
                 ax2.add_artist(line)
-                ax2.text(x=c.px.x + 2,
+                ax2.text(x=c.px.x + 5,
                          y=c.px.z,
                          s='Detector',
                          ha='left',
                          va='center',
                          size=8)
+                print("2", c.px.x)
             else:
                 pass
         
         ax0.set_xlim([0, 10])
         ax0.set_ylim([-10, 0])
 
+        print(src[0])
         src = ''.join(src)
-        src = src.replace('\n', '\\\\')
-        src = src.replace('_', '\_')
-        src = '\\texttt{\\noindent \\\\' + src + '}'
-
-        ax0.text(x=5, y=-5, s=src, ha='center', va='center', size=6)
+        # src = src.replace('\n', '\\\\')
+        # src = src.replace('_', '\_')
+        # src = '\\texttt{\\noindent \\\\' + src + '}'
+        # src = 'test'
+        ax0.text(x=0, y=-5, s=src, ha='left', va='center', size=6)
         ax0.get_xaxis().set_visible(False)
         ax0.get_yaxis().set_visible(False)
         ax0.spines['right'].set_visible(False)
