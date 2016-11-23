@@ -63,13 +63,13 @@ class Detector:
 
             float d = num/den;
 
-            x0[i] += lx*d + x0[i];
-            y0[i] += ly*d + y0[i];
-            z0[i] += lz*d + z0[i];
+            x0[i] = lx*d + x0[i];
+            y0[i] = ly*d + y0[i];
+            z0[i] = lz*d + z0[i];
 
-            x1[i] += x0[i] + x1[i];
-            y1[i] += y0[i] + y1[i];
-            z1[i] += z0[i] + z1[i];
+            x1[i] = x0[i] + x1[i];
+            y1[i] = y0[i] + y1[i];
+            z1[i] = z0[i] + z1[i];
             ''',
             "prop")
 

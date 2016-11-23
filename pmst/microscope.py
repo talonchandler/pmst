@@ -76,7 +76,7 @@ class Microscope:
 
                 pixel_width = c.xwidth/c.xnpix
                 yfit = [8*off_frac((i-50)*pixel_width, 0, pixel_width, pixel_width, 2) for i in x]
-                ax3.step(x, yfit, where='mid', markersize=0, color='r')
+                # ax3.step(x, yfit, where='mid', markersize=0, color='r')
 
                 line = plt.Line2D((-c.px.x, c.px.x),
                                   (c.px.z, c.px.z),
@@ -91,7 +91,7 @@ class Microscope:
                          va='center',
                          size=8)
             else:
-                pass
+                c.schematic(ax2)
         
         ax0.set_xlim([0, 10])
         ax0.set_ylim([-10, 0])
