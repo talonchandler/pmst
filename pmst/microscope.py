@@ -104,7 +104,7 @@ class Microscope:
         font = FontProperties()
         font.set_family('monospace')
         font.set_size('xx-small')        
-        ax0.text(x=-2, y=-5, s=src, ha='left', va='center', linespacing=1.2, fontproperties=font)
+        ax0.text(x=1, y=-5, s=src, ha='left', va='center', linespacing=1.2, fontproperties=font)
         ax0.get_xaxis().set_visible(False)
         ax0.get_yaxis().set_visible(False)
         ax0.spines['right'].set_visible(False)
@@ -118,7 +118,6 @@ class Microscope:
         ylab = ax1.get_yticks().tolist()
         ylab = ['$\mathrm{' + str(int(lab)) + '}$' for lab in ylab]
         ax1.set_yticklabels(ylab)
-        
         
         ax2.set_xlim([-10, 10])
         ax2.set_ylim([-10, 10])
