@@ -5,11 +5,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-# from matplotlib import rc
-# rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-# ## for Palatino and other serif fonts use:
-# #rc('font',**{'family':'serif','serif':['Palatino']})
-# rc('text', usetex=True)
+from matplotlib import rc
+rc('text', usetex=False)
 
 class Microscope:
     """A microscope""" 
@@ -41,24 +38,30 @@ class Microscope:
     def plot_results(self, filename, src='', dpi=300):
         f, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2, figsize=(11, 8))
 
+        
         # Plot source
         ax2.add_artist(plt.Circle((self.source.origin.x, self.source.origin.z),
                                   0.1, color='k'))
         ax2.text(x=self.source.origin.x + 7, y=self.source.origin.z,
-                 s='Source', ha='left', va='center', size=8)
+                 s='$\mathrm{Source}$', ha='left', va='center', size=8)
 
         # Plot each component
         for c in self.component_list:
             if isinstance(c, Detector):
                 # Plot data
                 px = c.pixel_values
+                ax1.set_xlim(0, c.xnpix)
+                ax1.set_ylim(0, c.ynpix)                
                 ax1.imshow(c.pixel_values, interpolation='none', cmap='Greys_r')
+                ax1.set_aspect(aspect=1./ax1.get_data_ratio(), adjustable='box-forced')
                 
                 x = range(len(px[:, int(px.shape[0]/2)-1]))
                 y = px[:, int(px.shape[0]/2)-1]
                 y = y/self.source.n_rays
+                ax3.set_xlim(0, c.xnpix)
                 ax3.step(x, y, where='mid', markersize=0, color='k')
-
+                ax3.set_aspect(aspect=1./ax3.get_data_ratio(), adjustable='box-forced')
+                
                 # Calculate true
                 def sa(a, b, d):
                     alpha = a/(2*d)
@@ -86,7 +89,7 @@ class Microscope:
                 ax2.add_artist(line)
                 ax2.text(x=c.px.x + 5,
                          y=c.px.z,
-                         s='Detector',
+                         s=r'$\mathrm{Detector}$',
                          ha='left',
                          va='center',
                          size=8)
@@ -97,17 +100,25 @@ class Microscope:
         ax0.set_ylim([-10, 0])
 
         src = ''.join(src)
-        # src = src.replace('\n', '\\\\')
-        # src = src.replace('_', '\_')
-        # src = '\\texttt{\\noindent \\\\' + src + '}'
-        # src = 'test'
-        ax0.text(x=0, y=-5, s=src, ha='left', va='center', size=6)
+        from matplotlib.font_manager import FontProperties
+        font = FontProperties()
+        font.set_family('monospace')
+        font.set_size('xx-small')        
+        ax0.text(x=-2, y=-5, s=src, ha='left', va='center', linespacing=1.2, fontproperties=font)
         ax0.get_xaxis().set_visible(False)
         ax0.get_yaxis().set_visible(False)
         ax0.spines['right'].set_visible(False)
         ax0.spines['top'].set_visible(False)
         ax0.spines['bottom'].set_visible(False)
         ax0.spines['left'].set_visible(False)
+
+        xlab = ax1.get_xticks().tolist()
+        xlab = ['$\mathrm{' + str(int(lab)) + '}$' for lab in xlab]
+        ax1.set_xticklabels(xlab)
+        ylab = ax1.get_yticks().tolist()
+        ylab = ['$\mathrm{' + str(int(lab)) + '}$' for lab in ylab]
+        ax1.set_yticklabels(ylab)
+        
         
         ax2.set_xlim([-10, 10])
         ax2.set_ylim([-10, 10])
@@ -118,9 +129,25 @@ class Microscope:
         ax2.spines['bottom'].set_visible(False)
         ax2.spines['left'].set_visible(False)
 
-        ax2.set_aspect(aspect=1, adjustable='box')
+        def latex_float(f):
+            float_str = "{0:.0e}".format(f)
+            if f == 0:
+                return "0"
+            elif "e" in float_str:
+                base, exponent = float_str.split("e")
+                return r"{0} \times 10^{{{1}}}".format(base, int(exponent))
+            else:
+                return float_str
 
-        #ax3.set_aspect(aspect=100, adjustable='box')
+        
+        xlab = ax3.get_xticks().tolist()
+        xlab = ['$\mathrm{' + str(int(lab)) + '}$' for lab in xlab]
+        ax3.set_xticklabels(xlab)
+        ylab = ax3.get_yticks().tolist()
+        ylab = ['$\mathrm{' + latex_float(lab) + '}$' for lab in ylab]
+        ax3.set_yticklabels(ylab)
+
+        
         f.savefig(filename, dpi=dpi)
         
     def __str__(self):

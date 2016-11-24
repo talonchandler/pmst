@@ -10,7 +10,7 @@ class Lens:
         self.f = f
         self.radius = radius
         self.label = label
-
+        
     def propagate(self, ray_list):
         prop = ElementwiseKernel(
             '''
@@ -103,7 +103,7 @@ class Lens:
 
         ax.text(x=self.origin.x + 7,
                 y=self.origin.z,
-                s='',
+                s=self.label,
                 ha='left',
                 va='center',
                 size=8)
