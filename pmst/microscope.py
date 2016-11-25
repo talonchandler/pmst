@@ -33,7 +33,6 @@ class Microscope:
         for i, func in enumerate(func_list):
             ray_list, pixel_values = f(func, ray_list)
             if pixel_values is not None:
-                print(pixel_values)
                 self.component_list[i].pixel_values = pixel_values
     
     def plot_results(self, filename, src='', fit=None, dpi=300):
@@ -45,7 +44,7 @@ class Microscope:
         font = FontProperties()
         font.set_family('monospace')
         font.set_size('xx-small')        
-        ax0.text(x=-10, y=10, s=src, ha='left', va='top',
+        ax0.text(x=-10, y=0, s=src, ha='left', va='center',
                  linespacing=1.2, fontproperties=font)
 
         # Plot schematic
@@ -89,7 +88,8 @@ class Microscope:
         ax3.set_xlim(0, c.xnpix)
         ax3.step(x, y, where='mid', markersize=0, color='k')
         ax3.set_aspect(aspect=1./ax3.get_data_ratio(), adjustable='box-forced')
-        ax3.step(x, fit, where='mid', markersize=0, color='r')
+        if fit is not None:
+            ax3.step(x, fit, where='mid', markersize=0, color='r')
         ax3.set_aspect(aspect=1./ax3.get_data_ratio(), adjustable='box-forced')
                 
         def latex_float(f):

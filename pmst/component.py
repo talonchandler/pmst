@@ -3,7 +3,7 @@ from pycuda.elementwise import ElementwiseKernel
 
 class Lens:
     """ A lens"""
-    def __init__(self, origin, n, normal, f, radius, label):
+    def __init__(self, origin, n, normal, f=1, radius=1, label=None):
         self.origin = origin
         self.n = n
         self.normal = normal
@@ -50,17 +50,6 @@ class Lens:
                 x1[i] = x0[i];
                 y1[i] = y0[i];
                 z1[i] = z0[i] + 1;
-            }
-            else {
-            /*
-                x0[i] = lx*d + x0[i];
-                y0[i] = ly*d + y0[i];
-                z0[i] = lz*d + z0[i];
-
-                x1[i] = x0[i] + x1[i];
-                y1[i] = y0[i] + y1[i];
-                z1[i] = z0[i] + z1[i];
-            */
             }
             ''',
             "prop")

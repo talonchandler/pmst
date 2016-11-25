@@ -128,7 +128,7 @@ class DirectedPointSource:
             //z1[i] = zi;//z0[i] + cos(phi0 + phi1);
             ''',
             "calc_dir")
-        print(self.direction)
+
         calc_dir(x0, y0, z0, x1, y1, z1, u1, u2, self.psi,
                  self.direction.x, self.direction.y, self.direction.z)
 
