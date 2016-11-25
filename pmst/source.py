@@ -27,7 +27,12 @@ class DirectedPointSource:
             \
     """
 
-    def __init__(self, origin, n_rays, direction, psi):
+    def __init__(self,
+                 origin=Point(0, 0, 0),
+                 n_rays=1,
+                 direction=Point(0, 0, 1),
+                 psi=np.pi/2):
+        
         self.n_rays = n_rays
         self.origin = origin
         self.direction = direction
@@ -49,31 +54,79 @@ class DirectedPointSource:
         x1 = gpuarray.zeros(n, np.float32)
         y1 = gpuarray.zeros(n, np.float32)
         z1 = gpuarray.zeros(n, np.float32)
-        u1 = curand((n,))
-        u2 = curand((n,))
+        u1 = curand((n,))  # U(0,1)
+        u2 = curand((n,))  # U(0,1)
         out = gpuarray.zeros(n, np.float32)
+
         # TODO: Handle psi > pi
+        # TODO: Handle non-standard direction
+        # See http://mathworld.wolfram.com/SpherePointPicking.html
+        # See http://math.stackexchange.com/a/205589/357869
         calc_dir = ElementwiseKernel(
             '''
             float *x0, float *y0, float *z0, 
             float *x1, float *y1, float *z1, 
-            float *u1, float *u2, 
-            float psi, float pi
+            float *u1, float *u2, float psi, 
+            float xd, float yd, float zd
             ''',
             '''
-            float theta;
-            float phi_prime;
-            float phi;
-            theta = 2*pi*u1[i];
-            phi_prime = acos(2*u2[i] -1);
-            phi = phi_prime*psi/pi;
-            x1[i] = x0[i] + cos(theta)*sin(phi);
-            y1[i] = y0[i] + sin(theta)*sin(phi);
-            z1[i] = z0[i] + cos(phi);
+            #define PI 3.14159265
+
+            // Calculate the output theta value U(0, 2*PI)
+            float theta = 2*PI*u1[i];
+
+            // Calculate the output z value U(cos(psi), 1)
+            float zi = z0[i] + (1-cos(psi))*u2[i] + cos(psi);
+
+            // Calculate the output x and y values
+            float xi = x0[i] + sqrt(1 - pow(zi, 2))*cos(theta);
+            float yi = y0[i] + sqrt(1 - pow(zi, 2))*sin(theta);
+
+            //// Rotate the output values to the correct direction
+            // Normalize direction
+            float rd = sqrt(pow(xd, 2) + pow(yd, 2) + pow(zd, 2));
+            xd = xd/rd;
+            yd = yd/rd;
+            zd = zd/rd;
+
+            // Calculate the rotation axis (cross product of direction and (0, 0, 1))
+            float rr = sqrt(pow(xd, 2) + pow(yd, 2));
+            float xr = yd/rr;
+            float yr = -xd/rr;
+            float zr = 0;            
+            if(rr == 0){
+                xr = 0;
+                yr = 0;
+            }
+
+            // Calculate the rotation angle (arccos of dot product of direction and (0, 0, 1))
+            float a = acos(zd);
+
+            // Generate the rotation matrix about the axis using a matrix multiplication
+            float r11 = cos(a) + pow(xr, 2)*(1 - cos(a));
+            float r12 = xr*yr*(1 - cos(a)) - zr*sin(a);
+            float r13 = xr*zr*(1 - cos(a)) + yr*sin(a);
+            float r21 = yr*xr*(1 - cos(a)) + zr*sin(a);
+            float r22 = cos(a) + pow(yr, 2)*(1 - cos(a));
+            float r23 = yr*zr*(1 - cos(a)) - xr*sin(a);
+            float r31 = zr*xr*(1 - cos(a)) - yr*sin(a);
+            float r32 = zr*yr*(1 - cos(a)) + xr*sin(a);
+            float r33 = cos(a) + pow(zr, 2)*(1 - cos(a));
+
+            // Apply the rotation matrix to the points
+            x1[i] = r11*xi + r12*yi + r13*zi;
+            y1[i] = r21*xi + r22*yi + r23*zi;
+            z1[i] = r31*xi + r32*yi + r33*zi;
+
+            // Calculate final outputs
+            //x1[i] = xi;//x0[i] + cos(theta0 + theta1)*sin(phi0 + phi1);
+            //y1[i] = yi;//y0[i] + sin(theta0 + theta1)*sin(phi0 + phi1);
+            //z1[i] = zi;//z0[i] + cos(phi0 + phi1);
             ''',
             "calc_dir")
-        
-        calc_dir(x0, y0, z0, x1, y1, z1, u1, u2, self.psi, np.pi)
+        print(self.direction)
+        calc_dir(x0, y0, z0, x1, y1, z1, u1, u2, self.psi,
+                 self.direction.x, self.direction.y, self.direction.z)
 
         self.ray_list = (x0, y0, z0, x1, y1, z1)
 

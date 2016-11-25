@@ -33,6 +33,7 @@ class Microscope:
         for i, func in enumerate(func_list):
             ray_list, pixel_values = f(func, ray_list)
             if pixel_values is not None:
+                print(pixel_values)
                 self.component_list[i].pixel_values = pixel_values
     
     def plot_results(self, filename, src='', dpi=300):

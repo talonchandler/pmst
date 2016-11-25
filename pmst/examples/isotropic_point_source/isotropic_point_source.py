@@ -7,8 +7,8 @@ import numpy as np
 import time; start = time.time(); print('Running...')
 
 s = DirectedPointSource(origin=Point(0, 0, 0),
-                        n_rays=int(1e6),
-                        direction=Point(0, 0, 1),
+                        n_rays=int(1e7),
+                        direction=Point(0, 0, 2),
                         psi=np.pi/2)
 
 m = Microscope(source=s)
