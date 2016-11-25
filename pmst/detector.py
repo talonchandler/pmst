@@ -1,5 +1,8 @@
 from pmst.geometry import Point, Ray, Plane
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 import pycuda.gpuarray as gpuarray
 import pycuda.driver as cuda
@@ -84,3 +87,18 @@ class Detector:
         (hist, xedges, yedges) = np.histogram2d(ray_list[0].get(), ray_list[1].get(), bins=(xedges, yedges))
 
         return ray_list, hist
+
+    def schematic(self, ax):
+         # Plot data                         
+         line = plt.Line2D((-self.px.x, self.px.x),
+                           (self.px.z, self.px.z), 
+                           color='k',        
+                           ms=0)             
+
+         ax.add_artist(line)                
+         ax.text(x=self.px.x + 5,              
+                  y=self.px.z,                  
+                  s=r'$\mathrm{Detector}$',  
+                  ha='left',                 
+                  va='center',               
+                  size=8)                    

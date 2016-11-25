@@ -1,3 +1,7 @@
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 import numpy as np
 from random import uniform
 from pmst.geometry import Point, Ray, Plane
@@ -132,7 +136,12 @@ class DirectedPointSource:
 
     def __str__(self):
         return 'Source O:\t'+str(self.origin)+'\n'+'Rays:\t\t' + str(len(self.ray_list[0]))
-    
+
+    def schematic(self, ax):
+        ax.add_artist(plt.Circle((self.origin.x, self.origin.z),
+                                  0.1, color='k'))
+        ax.text(x=self.origin.x + 7, y=self.origin.z,
+                 s='$\mathrm{Source}$', ha='left', va='center', size=8)
     
 class IsotropicPointSource(DirectedPointSource):
     """An isotropic point source with n rays propagating from the origin."""
@@ -176,3 +185,5 @@ class RayListSource:
         z1 = gpuarray.to_gpu(np.array(z1, np.float32))        
             
         self.ray_list = (x0, y0, z0, x1, y1, z1)
+
+        

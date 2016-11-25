@@ -27,6 +27,26 @@ print("GPU: ", np.round(time.time() - start, 2), 's')
 with open(__file__, 'r') as myfile:
     src = myfile.readlines()
 
-m.plot_results('isotropic_point_source.pdf', src=src)
+# Calculate true
+def sa(a, b, d):
+    alpha = a/(2*d)
+    beta = b/(2*d)
+    omega = 4*np.arccos(np.sqrt((1+alpha**2+beta**2)/((1+alpha**2)*(1+beta**2))))
+    return omega
+
+def off_frac(A, B, a, b, d):
+    t1 = sa(2*(A+a), 2*(B+b), d)
+    t2 = sa(2*A, 2*(B+b), d)
+    t3 = sa(2*(A+a), 2*B, d)
+    t4 = sa(2*A, 2*B, d)
+    sa_off = (t1 - t2 - t3 + t4)/4
+    return np.abs(sa_off/(2*np.pi))
+
+pixel_width = d.xwidth/d.xnpix
+px = d.pixel_values
+x = range(len(px[:, int(px.shape[0]/2)-1]))
+iso_fit = [off_frac((i-50)*pixel_width, 0, pixel_width, pixel_width, 1) for i in x]
+    
+m.plot_results('isotropic_point_source.pdf', src=src[0:25], fit=iso_fit)
 
 print('Total:', np.round(time.time() - start, 2), 's')
