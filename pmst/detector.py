@@ -70,15 +70,17 @@ class Detector:
             ''',
             "prop")
 
-        prop(ray_list[0], ray_list[1], ray_list[2],
-             ray_list[3], ray_list[4], ray_list[5],
+        rays = ray_list.ray_list
+        
+        prop(rays[0], rays[1], rays[2],
+             rays[3], rays[4], rays[5],
              self.pc.x, self.pc.y, self.pc.z,
              self.normal.x, self.normal.y, self.normal.z)
         
         # Compute histogram results (todo for non-z-aligned planes)
         xedges = np.linspace(self.pc.x - self.px.x, self.pc.x + self.px.x, self.xnpix + 1)
         yedges = np.linspace(self.pc.y - self.py.y, self.pc.y + self.py.y, self.ynpix + 1)
-        (hist, xedges, yedges) = np.histogram2d(ray_list[0].get(), ray_list[1].get(), bins=(xedges, yedges))
+        (hist, xedges, yedges) = np.histogram2d(rays[0].get(), rays[1].get(), bins=(xedges, yedges))
 
         return ray_list, hist
 

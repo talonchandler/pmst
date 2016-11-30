@@ -6,9 +6,7 @@ from pmst.detector import Detector
 from pmst.geometry import Point, Ray, Plane
 import numpy as np
 
-
 class TestDetector(TestCase):
-
     def test_detector(self):
         p1 = Point(0, 0, 2)
         p2 = Point(0, 1, 2)

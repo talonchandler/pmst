@@ -1,5 +1,5 @@
 import sys
-sys.path.append("../")
+sys.path.append("../../")
 
 from unittest import TestCase
 import pmst.source
@@ -15,7 +15,7 @@ class TestIsotropicPointSource(TestCase):
         self.s.generate_rays()
 
     def test_createIsotropicPointSource(self):
-        self.assertTrue(len(self.s.ray_list[0]) == self.nrays)
+        self.assertTrue(len(self.s.ray_list.ray_list[0]) == self.nrays)
         self.assertTrue((self.s.origin == Point(0, 0, 0)))
 
 class TestDirectedPointSource(TestCase):
@@ -26,7 +26,8 @@ class TestDirectedPointSource(TestCase):
         
     def test_createSource(self):
         self.assertTrue(self.dps.n_rays == 1)
-        print(self.dps.ray_list)
+        # print(self.dps.ray_list)
+        # print("HELLO")
 
 class TestRayListSource(TestCase):
 

@@ -3,7 +3,7 @@ from pycuda.elementwise import ElementwiseKernel
 
 class Lens:
     """ A lens"""
-    def __init__(self, origin, n, normal, f=1, radius=1, label=None):
+    def __init__(self, origin, n, normal, f=1, radius=1, label=True):
         self.origin = origin
         self.n = n
         self.normal = normal
@@ -54,8 +54,10 @@ class Lens:
             ''',
             "prop")
 
-        prop(ray_list[0], ray_list[1], ray_list[2],
-             ray_list[3], ray_list[4], ray_list[5],
+        rays = ray_list.ray_list
+        
+        prop(rays[0], rays[1], rays[2],
+             rays[3], rays[4], rays[5],
              self.origin.x, self.origin.y, self.origin.z,
              self.normal.x, self.normal.y, self.normal.z,
              self.radius, self.f)
@@ -90,11 +92,12 @@ class Lens:
         patch = patches.PathPatch(path, facecolor='none', lw=1)
         ax.add_patch(patch)
 
-        ax.text(x=self.origin.x + 7,
-                y=self.origin.z,
-                s=self.label,
-                ha='left',
-                va='center',
-                size=8)
+        if label:
+            ax.text(x=self.origin.x + 7,
+                    y=self.origin.z,
+                    s=r'$\mathrm{Lens}$',
+                    ha='left',
+                    va='center',
+                    size=8)
 
 

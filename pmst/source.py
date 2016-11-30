@@ -12,7 +12,28 @@ import pycuda.gpuarray as gpuarray
 from pycuda.curandom import rand as curand
 from pycuda.elementwise import ElementwiseKernel
 
+class RayList:
+    """A wrapper class for the gpuarray that represents rays. Provides printing 
+    and debugging options."""
+    def __init__(self, x0, y0, z0, x1, y1, z1):
+        self.ray_list = (x0, y0, z0, x1, y1, z1)
+        
+    def __str__(self):
+        s = "Ray List:\n"
+        for i in range(len(self.ray_list[0])):
+            s = s + str(self.get_ray(i)) + '\n'
+            
+        return s
+    
+    def get_ray(self, i):
+        r = self.ray_list
+        z = []
+        for j in range(len(r)):
+            z.append(float(r[j][i].get())) # Convert gpuarray to float
 
+        return Ray(Point(z[0], z[1], z[2]),
+                   Point(z[3], z[4], z[5]))
+                   
 class DirectedPointSource:
     """A directed point source with n rays propagating from a cone specified 
     by an half-angle 'theta' around a vector 'direction'.
@@ -126,7 +147,7 @@ class DirectedPointSource:
         calc_dir(x0, y0, z0, x1, y1, z1, u1, u2, self.psi,
                  self.direction.x, self.direction.y, self.direction.z)
 
-        self.ray_list = (x0, y0, z0, x1, y1, z1)
+        self.ray_list = RayList(x0, y0, z0, x1, y1, z1)
 
     def __str__(self):
         return 'Source O:\t'+str(self.origin)+'\n'+'Rays:\t\t' + str(len(self.ray_list[0]))
@@ -178,6 +199,6 @@ class RayListSource:
         y1 = gpuarray.to_gpu(np.array(y1, np.float32))
         z1 = gpuarray.to_gpu(np.array(z1, np.float32))        
             
-        self.ray_list = (x0, y0, z0, x1, y1, z1)
+        self.ray_list = RayList(x0, y0, z0, x1, y1, z1)
 
         
