@@ -18,7 +18,7 @@ class Lens:
             float *x1, float *y1, float *z1, 
             float cx, float cy, float cz,
             float nx, float ny, float nz, 
-            float radius, float focal
+            float radius, float f
             ''',
             '''
             // Calculate intersection point
@@ -43,13 +43,25 @@ class Lens:
             float r = sqrt((ix - cx)*(ix - cx) + (iy - cy)*(iy - cy));
 
             if(r < radius) {
-                x0[i] = lx*d + x0[i];
-                y0[i] = ly*d + y0[i];
-                z0[i] = lz*d + z0[i];
+                // Calculate incoming ray angles
+                float ax = nx - cx; float ay = ny - cy; float az = nz - cz;
+                float len_a = sqrt(ax*ax + ay*ay + az*az);
+                float len_l = sqrt(lx*lx + ly*ly + lz*lz);
+                float phi_i = acos((ax*lx + ay*ly + az*lz)/(len_a*len_l));
+                float theta_i = atan2(y1[i], x1[i]);
+                
+                float phi_o = -r/f + phi_i;
+                float theta_o = theta_i;
 
-                x1[i] = x0[i];
-                y1[i] = y0[i];
-                z1[i] = z0[i] + 1;
+                // New ray origin is at the intersection point
+                x0[i] = ix;
+                y0[i] = iy;
+                z0[i] = iz;
+
+                // Calculate new ray direction
+                x1[i] = x0[i] + cos(theta_o)*sin(phi_o);
+                y1[i] = y0[i] + sin(theta_o)*sin(phi_o);
+                z1[i] = z0[i] + cos(phi_o);
             }
             ''',
             "prop")
@@ -92,7 +104,7 @@ class Lens:
         patch = patches.PathPatch(path, facecolor='none', lw=1)
         ax.add_patch(patch)
 
-        if label:
+        if self.label:
             ax.text(x=self.origin.x + 7,
                     y=self.origin.z,
                     s=r'$\mathrm{Lens}$',

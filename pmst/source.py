@@ -167,6 +167,81 @@ class IsotropicPointSource(DirectedPointSource):
     def __str__(self):
         return DirectedPointSource.__str__(self)
 
+class PlanarSource:
+    """A planar source with n rays
+    """
+
+    def __init__(self,
+                 origin=Point(0, 0, 0),
+                 n_rays=1,
+                 direction=Point(0, 0, 1),
+                 xedge=Point(1, 0, 1),
+                 yedge=Point(0, 1, 0)):
+        
+        self.n_rays = n_rays
+        self.origin = origin
+        self.direction = direction
+        self.xedge = xedge
+        self.yedge = yedge
+
+    def generate_rays(self):
+        # Generate rays
+        n = self.n_rays
+
+        ## Origin
+        x0 = gpuarray.zeros(n, np.float32)
+        y0 = gpuarray.zeros(n, np.float32)
+        z0 = gpuarray.zeros(n, np.float32)
+
+        ## Directions
+        x1 = gpuarray.zeros(n, np.float32)
+        y1 = gpuarray.zeros(n, np.float32)
+        z1 = gpuarray.zeros(n, np.float32)
+
+        u1 = curand((n,))  # U(0,1)
+        u2 = curand((n,))  # U(0,1)
+
+        calc_dir = ElementwiseKernel(
+            '''
+            float *x0, float *y0, float *z0, 
+            float *x1, float *y1, float *z1, 
+            float *u1, float *u2, 
+            float xd, float yd, float zd
+            ''',
+            '''
+            // Calculate the output theta value U(0, 2*PI)
+            float x = 2*u1[i] - 1;
+            float y = 2*u2[i] - 1;
+
+            x0[i] = x;
+            y0[i] = y;
+            z0[i] = 0;
+            x1[i] = x;
+            y1[i] = y;
+            z1[i] = 1;
+
+            ''',
+            "calc_dir")
+        calc_dir(x0, y0, z0, x1, y1, z1, u1, u2, 
+                 self.direction.x, self.direction.y, self.direction.z)
+
+        self.ray_list = RayList(x0, y0, z0, x1, y1, z1)
+
+    def __str__(self):
+        return 'Source O:\t'+str(self.origin)+'\n'+'Rays:\t\t' + str(len(self.ray_list[0]))
+
+    def schematic(self, ax):
+        line = plt.Line2D((-1, 1),
+                          (0, 0), 
+                          color='k',        
+                          ms=0)             
+        ax.add_artist(line)                        
+        #ax.add_artist(plt.Circle((self.origin.x, self.origin.z),
+        #                          0.1, color='k'))
+        ax.text(x=self.origin.x + 7, y=self.origin.z,
+                 s='$\mathrm{Coll.\ Planar\ Source}$', ha='left', va='center', size=8)
+
+    
 class RayListSource:
     """A source specified by a list of rays."""
     def __init__(self, input_ray_list):

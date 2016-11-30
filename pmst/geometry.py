@@ -28,7 +28,7 @@ class Point():
         return self.__eq__(other)
 
     def __str__(self):
-        return 'Point(' + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z) + ')'
+        return 'Point(' + '{:.2f}'.format(self.x) + ', ' + '{:.2f}'.format(self.y) + ', ' + '{:.2f}'.format(self.z) + ')'
 
     def __repr__(self):
         return self.__str__()
@@ -46,7 +46,7 @@ class Point():
                      self.x*other.y - self.y*other.x)
 
     def is_collinear(self, p2, p3):
-        if (self - p2).cross(self - p3).length == 0:
+        if (self - p2).cross(self - p3).length <= 1e-6:
             return True
         else:
             return False
@@ -68,8 +68,15 @@ class Ray:
             self.origin = origin
             self.direction = direction
 
+    # TODO: Test that direction is the same too
+    # TODO: Clean this method
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        if self.origin.is_collinear(other.origin, other.direction):
+            if self.direction.is_collinear(other.origin, other.direction):
+                return True
+        if self.__dict__ == other.__dict__:
+            return True
+        return False
 
     def __contains__(self, other):
         if isinstance(other, Point):  # Is a point on a half line
