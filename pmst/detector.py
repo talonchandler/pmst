@@ -4,12 +4,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-import pycuda.gpuarray as gpuarray
-import pycuda.driver as cuda
-import pycuda.autoinit
-import pycuda.gpuarray as gpuarray
-import pycuda.cumath as cumath
-from pycuda.curandom import rand as curand
 from pycuda.elementwise import ElementwiseKernel
 
 class Detector:
@@ -101,4 +95,5 @@ class Detector:
                   s=r'$\mathrm{Detector}$',  
                   ha='left',                 
                   va='center',               
-                  size=8)                    
+                  size=8)
+         

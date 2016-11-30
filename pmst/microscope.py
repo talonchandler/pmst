@@ -1,3 +1,4 @@
+import time;
 from pmst.detector import Detector
 from functools import reduce
 import numpy as np
@@ -19,7 +20,9 @@ class Microscope:
 
     def simulate(self):
         # Generate rays
+        start = time.time();
         self.source.generate_rays()
+        print("Allocate:\t", np.round(time.time() - start, 1), 's'); start = time.time()
         
         # Populate function list (return bound methods)
         func_list = []
@@ -34,7 +37,8 @@ class Microscope:
             ray_list, pixel_values = f(func, ray_list)
             if pixel_values is not None:
                 self.component_list[i].pixel_values = pixel_values
-    
+
+        print("Propagate:\t", np.round(time.time() - start, 1), 's'); 
     def plot_results(self, filename, src='', fit=None, dpi=300):
         f, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2, figsize=(11, 8))
 

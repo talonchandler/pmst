@@ -1,17 +1,14 @@
+import time; start = time.time();
 import matplotlib
+import numpy as np
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
-import numpy as np
 from random import uniform
 from pmst.geometry import Point, Ray, Plane
 
 # Load gpu
-import pycuda.gpuarray as gpuarray
-import pycuda.driver as cuda
 import pycuda.autoinit
 import pycuda.gpuarray as gpuarray
-import pycuda.cumath as cumath
 from pycuda.curandom import rand as curand
 from pycuda.elementwise import ElementwiseKernel
 
@@ -47,23 +44,21 @@ class DirectedPointSource:
         n = self.n_rays
 
         ## Origin
-        x0 = gpuarray.empty(n, np.float32)
-        y0 = gpuarray.empty(n, np.float32)
-        z0 = gpuarray.empty(n, np.float32)
+        x0 = gpuarray.zeros(n, np.float32)
+        y0 = gpuarray.zeros(n, np.float32)
+        z0 = gpuarray.zeros(n, np.float32)
         x0.fill(self.origin.x)
         y0.fill(self.origin.y)
         z0.fill(self.origin.z)
-        
+
         ## Directions
         x1 = gpuarray.zeros(n, np.float32)
         y1 = gpuarray.zeros(n, np.float32)
         z1 = gpuarray.zeros(n, np.float32)
+
         u1 = curand((n,))  # U(0,1)
         u2 = curand((n,))  # U(0,1)
-        out = gpuarray.zeros(n, np.float32)
-
-        # TODO: Handle psi > pi
-        # TODO: Handle non-standard direction
+        # TODO: Handle non-zero origin
         # See http://mathworld.wolfram.com/SpherePointPicking.html
         # See http://math.stackexchange.com/a/205589/357869
         calc_dir = ElementwiseKernel(
@@ -128,7 +123,6 @@ class DirectedPointSource:
             //z1[i] = zi;//z0[i] + cos(phi0 + phi1);
             ''',
             "calc_dir")
-
         calc_dir(x0, y0, z0, x1, y1, z1, u1, u2, self.psi,
                  self.direction.x, self.direction.y, self.direction.z)
 
