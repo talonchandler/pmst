@@ -55,21 +55,22 @@ class Detector:
 
             Point r0 = {x0[i], y0[i], z0[i]};
             Point r1 = {x1[i], y1[i], z1[i]};
-            Point c0 = {cx, cy, cz};
+            Point c = {cx, cy, cz};
             Point n = {nx, ny, nz};
-            Point l = subtract(r1, r0);
-            double d = dot(subtract(c0, r0), n)/dot(l, n);
-            Point i0 = add(scale(l, d), r0);  // Intersection point
+            Ray ri = {r0, r1};
+            Plane p = {n, c};
+            Point ro = intersect(ri, p);
 
             // New ray origin is at the intersection point
-            x0[i] = i0.x;
-            y0[i] = i0.y;
-            z0[i] = i0.z;
+            x0[i] = ro.x;
+            y0[i] = ro.y;
+            z0[i] = ro.z;
 
             // Calculate new ray direction
-            x1[i] = x0[i] + x1[i];
-            y1[i] = y0[i] + y1[i];
-            z1[i] = z0[i] + z1[i];
+            Point r = subtract(r1, r0);
+            x1[i] = x0[i] + r.x;
+            y1[i] = y0[i] + r.y;
+            z1[i] = z0[i] + r.z;
         }
         """
         )

@@ -1,4 +1,4 @@
-import time; total_time = time.time(); print('Running...'); init_time = total_time
+import time; total_time = time.time(); print('Running...'); 
 import sys; sys.path.append("../../../")
 from pmst.source import DirectedPointSource
 from pmst.microscope import Microscope
@@ -6,11 +6,10 @@ from pmst.detector import Detector
 from pmst.geometry import Point
 import numpy as np
 
-
-print("Initialize:\t", np.round(time.time() - init_time, 1), 's');
+print("Initialize:\t", np.round(time.time() - total_time, 1), 's');
 
 s = DirectedPointSource(origin=Point(0, 0, 0),
-                        n_rays=int(2**24),
+                        n_rays=int(2**23),
                         direction=Point(0, 0, 2),
                         psi=np.pi/2)
 
@@ -22,7 +21,6 @@ d = Detector(center=Point(0, 0, 1),
              xnpix=100, ynpix=100)
 
 m.add_component(d)
-
 m.simulate()
 
 plot_time = time.time()

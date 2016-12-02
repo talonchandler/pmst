@@ -15,7 +15,6 @@ class Lens:
 
     def propagate(self, ray_list):
 
-
         mod = SourceModule(util + """
         __global__ void propagate(
             double *x0, double *y0, double *z0,
@@ -30,33 +29,37 @@ class Lens:
         // Calculate intersection point
         Point r0 = {x0[i], y0[i], z0[i]};
         Point r1 = {x1[i], y1[i], z1[i]};
-        Point c0 = {cx, cy, cz};
+        Point c = {cx, cy, cz};
         Point n = {nx, ny, nz};
-        Point l = subtract(r1, r0);
-        double d = dot(subtract(c0, r0), n)/dot(l, n);
-        Point i0 = add(scale(l, d), r0);  // Intersection point
+
+        Ray ri = {r0, r1};
+        Plane p = {n, c};
+        Point ro = intersect(ri, p);
 
         // Check if the ray intersects with the lens
-        double r = len(subtract(i0, c0));
+        double r = len(subtract(ro, c));
         if(r < radius) {
 
             // Calculate incoming ray angles
-            Point a = subtract(n, c0);
+            Point a = subtract(n, c);
+            Point l = subtract(r1, r0);
             double phi_i = acos(dot(a, l)/(len(a)*len(l)));
-            double theta_i = atan2(y1[i], x1[i]);
+            double theta0_i = atan2(y1[i], x1[i]);
+
+            double theta1_i = atan2(y1[i], x1[i]);
 
             // Transform angles
-            double phi_o = -r/f + phi_i;
-            double theta_o = theta_i;
+            double phi_o = -r*cos(theta1_i - theta0_i)/f + phi_i;
+            double theta0_o = theta0_i;
 
             // New ray origin is at the intersection point
-            x0[i] = i0.x;
-            y0[i] = i0.y;
-            z0[i] = i0.z;
+            x0[i] = ro.x;
+            y0[i] = ro.y;
+            z0[i] = ro.z;
 
             // Calculate new ray direction
-            x1[i] = x0[i] + cos(theta_o)*sin(phi_o);
-            y1[i] = y0[i] + sin(theta_o)*sin(phi_o);
+            x1[i] = x0[i] + cos(theta0_o)*sin(phi_o);
+            y1[i] = y0[i] + sin(theta0_o)*sin(phi_o);
             z1[i] = z0[i] + cos(phi_o);
         }
         }

@@ -9,6 +9,17 @@ typedef struct Point {
     double z;
 } Point;
 
+typedef struct Plane {
+    Point n;
+    Point c;
+} Plane;
+
+typedef struct Ray {
+    Point r0;
+    Point r1;
+} Ray;
+
+
 __device__ Point add(struct Point p1, struct Point p2) {
     Point out = {p1.x + p2.x, p1.y + p2.y, p1.z + p2.z};
     return out;
@@ -29,10 +40,25 @@ __device__ double dot(struct Point p1, struct Point p2) {
     return out;
 }
 
+__device__ Point cross(struct Point p1, struct Point p2) {
+    Point out = {p1.y*p2.z - p1.z*p2.y,
+                 p1.z*p2.x + p1.x*p2.z,
+                 p1.x*p2.y - p1.y*p2.x};
+    return out;
+}
+
 __device__ double len(struct Point p1) {
     double out = sqrt(p1.x*p1.x + p1.y*p1.y + p1.z*p1.z);
     return out;
 }
+
+__device__ Point intersect(struct Ray r, struct Plane p) {
+    Point l = subtract(r.r1, r.r0);
+    double d = dot(subtract(p.c, r.r0), p.n)/dot(l, p.n);
+    Point out = add(scale(l, d), r.r0);  // Intersection point
+    return out;
+}
+
 """
 
 
