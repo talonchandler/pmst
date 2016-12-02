@@ -6,11 +6,11 @@ from pmst.detector import Detector
 from pmst.geometry import Point
 import numpy as np
 
+
 print("Initialize:\t", np.round(time.time() - init_time, 1), 's');
 
-
 s = DirectedPointSource(origin=Point(0, 0, 0),
-                        n_rays=int(1e7),
+                        n_rays=int(2**24),
                         direction=Point(0, 0, 2),
                         psi=np.pi/2)
 

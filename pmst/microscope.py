@@ -38,7 +38,8 @@ class Microscope:
             if pixel_values is not None:
                 self.component_list[i].pixel_values = pixel_values
 
-        print("Propagate:\t", np.round(time.time() - start, 1), 's'); 
+        print("Propagate:\t", np.round(time.time() - start, 1), 's');
+        
     def plot_results(self, filename, src='', fit=None, dpi=300):
         f, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2, figsize=(11, 8))
 

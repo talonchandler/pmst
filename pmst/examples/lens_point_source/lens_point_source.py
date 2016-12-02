@@ -35,11 +35,10 @@ d = Detector(Point(0, 0, 2),
 m.add_component(d)
 
 m.simulate()
-print("GPU:\t", np.round(time.time() - t, 2), 's')
 
 with open(__file__, 'r') as myfile:
     src = myfile.readlines()
 
 m.plot_results('lens_point_source.pdf', src=src)
 
-print('Total:\t', np.round(time.time() - start, 2), 's')
+print('Total:\t\t', np.round(time.time() - start, 1), 's')

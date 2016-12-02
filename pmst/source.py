@@ -9,7 +9,7 @@ from pmst.geometry import Point, Ray, Plane
 # Load gpu
 import pycuda.autoinit
 import pycuda.gpuarray as gpuarray
-from pycuda.curandom import rand as curand
+import pycuda.curandom as curandom
 from pycuda.elementwise import ElementwiseKernel
 
 class RayList:
@@ -65,73 +65,75 @@ class DirectedPointSource:
         n = self.n_rays
 
         ## Origin
-        x0 = gpuarray.zeros(n, np.float32)
-        y0 = gpuarray.zeros(n, np.float32)
-        z0 = gpuarray.zeros(n, np.float32)
+        x0 = gpuarray.zeros(n, np.float64)
+        y0 = gpuarray.zeros(n, np.float64)
+        z0 = gpuarray.zeros(n, np.float64)
         x0.fill(self.origin.x)
         y0.fill(self.origin.y)
         z0.fill(self.origin.z)
 
         ## Directions
-        x1 = gpuarray.zeros(n, np.float32)
-        y1 = gpuarray.zeros(n, np.float32)
-        z1 = gpuarray.zeros(n, np.float32)
+        x1 = gpuarray.zeros(n, np.float64)
+        y1 = gpuarray.zeros(n, np.float64)
+        z1 = gpuarray.zeros(n, np.float64)
 
-        u1 = curand((n,))  # U(0,1)
-        u2 = curand((n,))  # U(0,1)
+        u1 = curandom.rand((n,), dtype=np.float64, stream=None)
+        u2 = curandom.rand((n,), dtype=np.float64, stream=None)
+        # u1 = curand((n,))  # U(0,1)
+        # u2 = curand((n,))  # U(0,1)
         # TODO: Handle non-zero origin
         # See http://mathworld.wolfram.com/SpherePointPicking.html
         # See http://math.stackexchange.com/a/205589/357869
         calc_dir = ElementwiseKernel(
             '''
-            float *x0, float *y0, float *z0, 
-            float *x1, float *y1, float *z1, 
-            float *u1, float *u2, float psi, 
-            float xd, float yd, float zd
+            double *x0, double *y0, double *z0, 
+            double *x1, double *y1, double *z1, 
+            double *u1, double *u2, double psi, 
+            double xd, double yd, double zd
             ''',
             '''
             #define PI 3.14159265
 
             // Calculate the output theta value U(0, 2*PI)
-            float theta = 2*PI*u1[i];
+            double theta = 2*PI*u1[i];
 
             // Calculate the output z value U(cos(psi), 1)
-            float zi = z0[i] + (1-cos(psi))*u2[i] + cos(psi);
+            double zi = z0[i] + (1-cos(psi))*u2[i] + cos(psi);
 
             // Calculate the output x and y values
-            float xi = x0[i] + sqrt(1 - pow(zi, 2))*cos(theta);
-            float yi = y0[i] + sqrt(1 - pow(zi, 2))*sin(theta);
+            double xi = x0[i] + sqrt(1 - pow(zi, 2))*cos(theta);
+            double yi = y0[i] + sqrt(1 - pow(zi, 2))*sin(theta);
 
             //// Rotate the output values to the correct direction
             // Normalize direction
-            float rd = sqrt(pow(xd, 2) + pow(yd, 2) + pow(zd, 2));
+            double rd = sqrt(pow(xd, 2) + pow(yd, 2) + pow(zd, 2));
             xd = xd/rd;
             yd = yd/rd;
             zd = zd/rd;
 
             // Calculate the rotation axis (cross product of direction and (0, 0, 1))
-            float rr = sqrt(pow(xd, 2) + pow(yd, 2));
-            float xr = yd/rr;
-            float yr = -xd/rr;
-            float zr = 0;            
+            double rr = sqrt(pow(xd, 2) + pow(yd, 2));
+            double xr = yd/rr;
+            double yr = -xd/rr;
+            double zr = 0;            
             if(rr == 0){
                 xr = 0;
                 yr = 0;
             }
 
             // Calculate the rotation angle (arccos of dot product of direction and (0, 0, 1))
-            float a = acos(zd);
+            double a = acos(zd);
 
             // Generate the rotation matrix about the axis using a matrix multiplication
-            float r11 = cos(a) + pow(xr, 2)*(1 - cos(a));
-            float r12 = xr*yr*(1 - cos(a)) - zr*sin(a);
-            float r13 = xr*zr*(1 - cos(a)) + yr*sin(a);
-            float r21 = yr*xr*(1 - cos(a)) + zr*sin(a);
-            float r22 = cos(a) + pow(yr, 2)*(1 - cos(a));
-            float r23 = yr*zr*(1 - cos(a)) - xr*sin(a);
-            float r31 = zr*xr*(1 - cos(a)) - yr*sin(a);
-            float r32 = zr*yr*(1 - cos(a)) + xr*sin(a);
-            float r33 = cos(a) + pow(zr, 2)*(1 - cos(a));
+            double r11 = cos(a) + pow(xr, 2)*(1 - cos(a));
+            double r12 = xr*yr*(1 - cos(a)) - zr*sin(a);
+            double r13 = xr*zr*(1 - cos(a)) + yr*sin(a);
+            double r21 = yr*xr*(1 - cos(a)) + zr*sin(a);
+            double r22 = cos(a) + pow(yr, 2)*(1 - cos(a));
+            double r23 = yr*zr*(1 - cos(a)) - xr*sin(a);
+            double r31 = zr*xr*(1 - cos(a)) - yr*sin(a);
+            double r32 = zr*yr*(1 - cos(a)) + xr*sin(a);
+            double r33 = cos(a) + pow(zr, 2)*(1 - cos(a));
 
             // Apply the rotation matrix to the points
             x1[i] = r11*xi + r12*yi + r13*zi;
@@ -189,29 +191,29 @@ class PlanarSource:
         n = self.n_rays
 
         ## Origin
-        x0 = gpuarray.zeros(n, np.float32)
-        y0 = gpuarray.zeros(n, np.float32)
-        z0 = gpuarray.zeros(n, np.float32)
+        x0 = gpuarray.zeros(n, np.float64)
+        y0 = gpuarray.zeros(n, np.float64)
+        z0 = gpuarray.zeros(n, np.float64)
 
         ## Directions
-        x1 = gpuarray.zeros(n, np.float32)
-        y1 = gpuarray.zeros(n, np.float32)
-        z1 = gpuarray.zeros(n, np.float32)
+        x1 = gpuarray.zeros(n, np.float64)
+        y1 = gpuarray.zeros(n, np.float64)
+        z1 = gpuarray.zeros(n, np.float64)
 
-        u1 = curand((n,))  # U(0,1)
-        u2 = curand((n,))  # U(0,1)
+        u1 = curandom.rand((n,), dtype=np.float64, stream=None)
+        u2 = curandom.rand((n,), dtype=np.float64, stream=None)
 
         calc_dir = ElementwiseKernel(
             '''
-            float *x0, float *y0, float *z0, 
-            float *x1, float *y1, float *z1, 
-            float *u1, float *u2, 
-            float xd, float yd, float zd
+            double *x0, double *y0, double *z0, 
+            double *x1, double *y1, double *z1, 
+            double *u1, double *u2, 
+            double xd, double yd, double zd
             ''',
             '''
             // Calculate the output theta value U(0, 2*PI)
-            float x = 2*u1[i] - 1;
-            float y = 2*u2[i] - 1;
+            double x = 2*u1[i] - 1;
+            double y = 2*u2[i] - 1;
 
             x0[i] = x;
             y0[i] = y;
@@ -267,12 +269,12 @@ class RayListSource:
             y1.append(ray.direction.y)
             z1.append(ray.direction.z)
 
-        x0 = gpuarray.to_gpu(np.array(x0, np.float32))
-        y0 = gpuarray.to_gpu(np.array(y0, np.float32))
-        z0 = gpuarray.to_gpu(np.array(z0, np.float32))       
-        x1 = gpuarray.to_gpu(np.array(x1, np.float32))
-        y1 = gpuarray.to_gpu(np.array(y1, np.float32))
-        z1 = gpuarray.to_gpu(np.array(z1, np.float32))        
+        x0 = gpuarray.to_gpu(np.array(x0, np.float64))
+        y0 = gpuarray.to_gpu(np.array(y0, np.float64))
+        z0 = gpuarray.to_gpu(np.array(z0, np.float64))       
+        x1 = gpuarray.to_gpu(np.array(x1, np.float64))
+        y1 = gpuarray.to_gpu(np.array(y1, np.float64))
+        z1 = gpuarray.to_gpu(np.array(z1, np.float64))        
             
         self.ray_list = RayList(x0, y0, z0, x1, y1, z1)
 

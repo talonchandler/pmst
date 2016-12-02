@@ -3,8 +3,11 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from pmst.geometry import util
 
 from pycuda.elementwise import ElementwiseKernel
+from pycuda.compiler import SourceModule
+import pycuda.gpuarray as gpuarray
 
 class Detector:
     """Square plane detector with square pixels.
@@ -40,48 +43,50 @@ class Detector:
 
     def propagate(self, ray_list):
 
-        prop = ElementwiseKernel(
-            '''
-            float *x0, float *y0, float *z0,
-            float *x1, float *y1, float *z1, 
-            float cx, float cy, float cz,
-            float nx, float ny, float nz
-            ''',
-            '''
-            float p0minusl0x = cx - x0[i];
-            float p0minusl0y = cy - y0[i];
-            float p0minusl0z = cz - z0[i];
-            float num = p0minusl0x*nx + p0minusl0y*ny + p0minusl0z*nz;
+        mod = SourceModule(util + """
+        __global__ void propagate(
+            double *x0, double *y0, double *z0,
+            double *x1, double *y1, double *z1, 
+            double cx, double cy, double cz,
+            double nx, double ny, double nz
+        )
+        {
+            int i = blockDim.x * blockIdx.x + threadIdx.x;
 
-            float lx = x1[i] - x0[i];
-            float ly = y1[i] - y0[i];
-            float lz = z1[i] - z0[i];
-            float den = lx*nx + ly*ny + lz*nz;
+            Point r0 = {x0[i], y0[i], z0[i]};
+            Point r1 = {x1[i], y1[i], z1[i]};
+            Point c0 = {cx, cy, cz};
+            Point n = {nx, ny, nz};
+            Point l = subtract(r1, r0);
+            double d = dot(subtract(c0, r0), n)/dot(l, n);
+            Point i0 = add(scale(l, d), r0);  // Intersection point
 
-            float d = num/den;
+            // New ray origin is at the intersection point
+            x0[i] = i0.x;
+            y0[i] = i0.y;
+            z0[i] = i0.z;
 
-            x0[i] = lx*d + x0[i];
-            y0[i] = ly*d + y0[i];
-            z0[i] = lz*d + z0[i];
-
+            // Calculate new ray direction
             x1[i] = x0[i] + x1[i];
             y1[i] = y0[i] + y1[i];
             z1[i] = z0[i] + z1[i];
-            ''',
-            "prop")
-
+        }
+        """
+        )
+        prop = mod.get_function("propagate")
         rays = ray_list.ray_list
         
         prop(rays[0], rays[1], rays[2],
              rays[3], rays[4], rays[5],
              self.pc.x, self.pc.y, self.pc.z,
-             self.normal.x, self.normal.y, self.normal.z)
+             self.normal.x, self.normal.y, self.normal.z, 
+             block=(512, 1, 1), grid=(int(len(rays[0])/512), 1))
         
         # Compute histogram results (todo for non-z-aligned planes)
         xedges = np.linspace(self.pc.x - self.px.x, self.pc.x + self.px.x, self.xnpix + 1)
         yedges = np.linspace(self.pc.y - self.py.y, self.pc.y + self.py.y, self.ynpix + 1)
         (hist, xedges, yedges) = np.histogram2d(rays[0].get(), rays[1].get(), bins=(xedges, yedges))
-
+        
         return ray_list, hist
 
     def schematic(self, ax):

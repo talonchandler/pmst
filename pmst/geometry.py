@@ -1,13 +1,48 @@
 import numpy as np
 
+util = """        
+#include <stdio.h>
+
+typedef struct Point {
+    double x;
+    double y;
+    double z;
+} Point;
+
+__device__ Point add(struct Point p1, struct Point p2) {
+    Point out = {p1.x + p2.x, p1.y + p2.y, p1.z + p2.z};
+    return out;
+}
+
+__device__ Point subtract(struct Point p1, struct Point p2) {
+    Point out = {p1.x - p2.x, p1.y - p2.y, p1.z - p2.z};
+    return out;
+}
+
+__device__ Point scale(struct Point p1, float s) {
+    Point out = {s*p1.x, s*p1.y, s*p1.z};
+    return out;
+}
+
+__device__ double dot(struct Point p1, struct Point p2) {
+    double out = p1.x*p2.x + p1.y*p2.y + p1.z*p2.z;
+    return out;
+}
+
+__device__ double len(struct Point p1) {
+    double out = sqrt(p1.x*p1.x + p1.y*p1.y + p1.z*p1.z);
+    return out;
+}
+"""
+
 
 class Point():
     """A  point in a 3-dimensional Euclidean space."""
 
     def __init__(self, x=0, y=0, z=0):
-        self.x = x
-        self.y = y
-        self.z = z
+        self.x = np.float64(x)
+        self.y = np.float64(y)
+        self.z = np.float64(z)
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__

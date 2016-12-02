@@ -1,5 +1,7 @@
 import numpy as np
+from pmst.geometry import util
 from pycuda.elementwise import ElementwiseKernel
+from pycuda.compiler import SourceModule
 
 class Lens:
     """ A lens"""
@@ -7,72 +9,70 @@ class Lens:
         self.origin = origin
         self.n = n
         self.normal = normal
-        self.f = f
-        self.radius = radius
+        self.f = np.float64(f)
+        self.radius = np.float64(radius)
         self.label = label
-        
+
     def propagate(self, ray_list):
-        prop = ElementwiseKernel(
-            '''
-            float *x0, float *y0, float *z0,
-            float *x1, float *y1, float *z1, 
-            float cx, float cy, float cz,
-            float nx, float ny, float nz, 
-            float radius, float f
-            ''',
-            '''
-            // Calculate intersection point
-            float p0minusl0x = cx - x0[i];
-            float p0minusl0y = cy - y0[i];
-            float p0minusl0z = cz - z0[i];
-            float num = p0minusl0x*nx + p0minusl0y*ny + p0minusl0z*nz;
 
-            float lx = x1[i] - x0[i];
-            float ly = y1[i] - y0[i];
-            float lz = z1[i] - z0[i];
-            float den = lx*nx + ly*ny + lz*nz;
 
-            float d = num/den;
-            
-            // Intersection point
-            float ix = lx*d + x0[i];
-            float iy = ly*d + y0[i];
-            float iz = lz*d + z0[i];
+        mod = SourceModule(util + """
+        __global__ void propagate(
+            double *x0, double *y0, double *z0,
+            double *x1, double *y1, double *z1, 
+            double cx, double cy, double cz,
+            double nx, double ny, double nz, 
+            double radius, double f
+        )
+        {
+        int i = blockDim.x * blockIdx.x + threadIdx.x;
 
-            // Check if the ray intersects with the lens
-            float r = sqrt((ix - cx)*(ix - cx) + (iy - cy)*(iy - cy));
+        // Calculate intersection point
+        Point r0 = {x0[i], y0[i], z0[i]};
+        Point r1 = {x1[i], y1[i], z1[i]};
+        Point c0 = {cx, cy, cz};
+        Point n = {nx, ny, nz};
+        Point l = subtract(r1, r0);
+        double d = dot(subtract(c0, r0), n)/dot(l, n);
+        Point i0 = add(scale(l, d), r0);  // Intersection point
 
-            if(r < radius) {
-                // Calculate incoming ray angles
-                float ax = nx - cx; float ay = ny - cy; float az = nz - cz;
-                float len_a = sqrt(ax*ax + ay*ay + az*az);
-                float len_l = sqrt(lx*lx + ly*ly + lz*lz);
-                float phi_i = acos((ax*lx + ay*ly + az*lz)/(len_a*len_l));
-                float theta_i = atan2(y1[i], x1[i]);
-                
-                float phi_o = -r/f + phi_i;
-                float theta_o = theta_i;
+        // Check if the ray intersects with the lens
+        double r = len(subtract(i0, c0));
+        if(r < radius) {
 
-                // New ray origin is at the intersection point
-                x0[i] = ix;
-                y0[i] = iy;
-                z0[i] = iz;
+            // Calculate incoming ray angles
+            Point a = subtract(n, c0);
+            double phi_i = acos(dot(a, l)/(len(a)*len(l)));
+            double theta_i = atan2(y1[i], x1[i]);
 
-                // Calculate new ray direction
-                x1[i] = x0[i] + cos(theta_o)*sin(phi_o);
-                y1[i] = y0[i] + sin(theta_o)*sin(phi_o);
-                z1[i] = z0[i] + cos(phi_o);
-            }
-            ''',
-            "prop")
+            // Transform angles
+            double phi_o = -r/f + phi_i;
+            double theta_o = theta_i;
+
+            // New ray origin is at the intersection point
+            x0[i] = i0.x;
+            y0[i] = i0.y;
+            z0[i] = i0.z;
+
+            // Calculate new ray direction
+            x1[i] = x0[i] + cos(theta_o)*sin(phi_o);
+            y1[i] = y0[i] + sin(theta_o)*sin(phi_o);
+            z1[i] = z0[i] + cos(phi_o);
+        }
+        }
+        """
+        )
+
+        prop = mod.get_function("propagate")
 
         rays = ray_list.ray_list
-        
+
         prop(rays[0], rays[1], rays[2],
              rays[3], rays[4], rays[5],
              self.origin.x, self.origin.y, self.origin.z,
              self.normal.x, self.normal.y, self.normal.z,
-             self.radius, self.f)
+             self.radius, self.f,
+             block=(512, 1, 1), grid=(int(len(rays[0])/512), 1))
         
         return ray_list, None
 
