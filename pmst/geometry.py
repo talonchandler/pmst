@@ -2,6 +2,7 @@ import numpy as np
 
 util = """        
 #include <stdio.h>
+#define PI 3.14159265
 
 typedef struct Point {
     double x;

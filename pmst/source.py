@@ -4,13 +4,14 @@ import numpy as np
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from random import uniform
-from pmst.geometry import Point, Ray, Plane
+from pmst.geometry import Point, Ray, Plane, util
 
 # Load gpu
 import pycuda.autoinit
 import pycuda.gpuarray as gpuarray
 import pycuda.curandom as curandom
 from pycuda.elementwise import ElementwiseKernel
+from pycuda.compiler import SourceModule
 
 class RayList:
     """A wrapper class for the gpuarray that represents rays. Provides printing 
@@ -55,10 +56,10 @@ class DirectedPointSource:
                  direction=Point(0, 0, 1),
                  psi=np.pi/2):
         
-        self.n_rays = n_rays
+        self.n_rays = int(n_rays)
         self.origin = origin
         self.direction = direction
-        self.psi = psi
+        self.psi = np.float64(psi)
 
     def generate_rays(self):
         # Generate rays
@@ -79,20 +80,23 @@ class DirectedPointSource:
 
         u1 = curandom.rand((n,), dtype=np.float64, stream=None)
         u2 = curandom.rand((n,), dtype=np.float64, stream=None)
-        # u1 = curand((n,))  # U(0,1)
-        # u2 = curand((n,))  # U(0,1)
+
         # TODO: Handle non-zero origin
         # See http://mathworld.wolfram.com/SpherePointPicking.html
         # See http://math.stackexchange.com/a/205589/357869
-        calc_dir = ElementwiseKernel(
-            '''
-            double *x0, double *y0, double *z0, 
+        mod = SourceModule(util + """
+        __global__ void propagate(
+            double *x0, double *y0, double *z0,
             double *x1, double *y1, double *z1, 
-            double *u1, double *u2, double psi, 
-            double xd, double yd, double zd
-            ''',
-            '''
-            #define PI 3.14159265
+            double *u1, double *u2, double psi,
+            double dx, double dy, double dz
+        )
+        {
+            int i = blockDim.x * blockIdx.x + threadIdx.x;
+
+            Point r0 = {x0[i], y0[i], z0[i]};
+            Point r1 = {x1[i], y1[i], z1[i]};
+            Point d = {dx, dy, dz};
 
             // Calculate the output theta value U(0, 2*PI)
             double theta = 2*PI*u1[i];
@@ -106,15 +110,15 @@ class DirectedPointSource:
 
             //// Rotate the output values to the correct direction
             // Normalize direction
-            double rd = sqrt(pow(xd, 2) + pow(yd, 2) + pow(zd, 2));
-            xd = xd/rd;
-            yd = yd/rd;
-            zd = zd/rd;
+            double rd = len(d);
+            dx = dx/rd;
+            dy = dy/rd;
+            dz = dz/rd;
 
             // Calculate the rotation axis (cross product of direction and (0, 0, 1))
-            double rr = sqrt(pow(xd, 2) + pow(yd, 2));
-            double xr = yd/rr;
-            double yr = -xd/rr;
+            double rr = sqrt(pow(dx, 2) + pow(dy, 2));
+            double xr = dy/rr;
+            double yr = -dx/rr;
             double zr = 0;            
             if(rr == 0){
                 xr = 0;
@@ -122,7 +126,7 @@ class DirectedPointSource:
             }
 
             // Calculate the rotation angle (arccos of dot product of direction and (0, 0, 1))
-            double a = acos(zd);
+            double a = acos(dz);
 
             // Generate the rotation matrix about the axis using a matrix multiplication
             double r11 = cos(a) + pow(xr, 2)*(1 - cos(a));
@@ -139,15 +143,15 @@ class DirectedPointSource:
             x1[i] = r11*xi + r12*yi + r13*zi;
             y1[i] = r21*xi + r22*yi + r23*zi;
             z1[i] = r31*xi + r32*yi + r33*zi;
+        }
+        """)
 
-            // Calculate final outputs
-            //x1[i] = xi;//x0[i] + cos(theta0 + theta1)*sin(phi0 + phi1);
-            //y1[i] = yi;//y0[i] + sin(theta0 + theta1)*sin(phi0 + phi1);
-            //z1[i] = zi;//z0[i] + cos(phi0 + phi1);
-            ''',
-            "calc_dir")
-        calc_dir(x0, y0, z0, x1, y1, z1, u1, u2, self.psi,
-                 self.direction.x, self.direction.y, self.direction.z)
+
+        prop = mod.get_function("propagate")
+
+        prop(x0, y0, z0, x1, y1, z1, u1, u2, self.psi,
+             self.direction.x, self.direction.y, self.direction.z,
+             block=(512, 1, 1), grid=(int(n/512), 1))
 
         self.ray_list = RayList(x0, y0, z0, x1, y1, z1)
 
