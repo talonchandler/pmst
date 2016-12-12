@@ -46,7 +46,7 @@ class DirectedPointSource:
             /
            /\  psi
     origin -------- direction
-           \ 
+            \ 
             \
     """
 

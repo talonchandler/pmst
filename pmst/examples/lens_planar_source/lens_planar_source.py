@@ -20,7 +20,7 @@ m = Microscope(source=s)
 
 l = Lens(Point(0, 0, 1),
          n=1.5,
-         normal=Point(0, 0, 2),
+         normal=Point(0, 0, 1),
          f=1,
          radius=0.5,
          label=True)

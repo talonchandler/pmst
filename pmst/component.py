@@ -41,12 +41,14 @@ class Lens:
         if(r < radius) {
 
             // Calculate incoming ray angles
-            Point a = subtract(n, c);
+            Point a = n;
             Point l = subtract(r1, r0);
             double phi_i = acos(dot(a, l)/(len(a)*len(l)));
             double theta0_i = atan2(y1[i], x1[i]);
-
-            double theta1_i = atan2(y1[i], x1[i]);
+        
+            // Project incoming ray point to plane
+            Point projp = projectPointToPlane(r0, p); 
+            double theta1_i = atan2(y1[i] - projp.y, x1[i] - projp.x);
 
             // Transform angles
             double phi_o = -r*cos(theta1_i - theta0_i)/f + phi_i;

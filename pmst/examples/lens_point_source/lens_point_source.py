@@ -19,7 +19,7 @@ m = Microscope(source=s)
 
 l = Lens(Point(0, 0, 1.0),
          n=1.5,
-         normal=Point(0, 0, 3),
+         normal=Point(0, 0, 1.0),
          f=1,
          radius=0.5,
          label=True)
@@ -27,9 +27,9 @@ l = Lens(Point(0, 0, 1.0),
 m.add_component(l)
 
 npx = 100
-d = Detector(Point(0, 0, 2),
-             x_edge=Point(2, 0, 2),
-             y_edge=Point(0, 2, 2),
+d = Detector(center=Point(0, 0, 2),
+             x_edge=Point(4, 0, 2),
+             y_edge=Point(0, 4, 2),
              xnpix=npx, ynpix=npx)
 
 m.add_component(d)
@@ -39,6 +39,6 @@ m.simulate()
 with open(__file__, 'r') as myfile:
     src = myfile.readlines()
 
-m.plot_results('lens_point_source.pdf', src=src)
+m.plot_results('lens_point_source_off.pdf', src=src)
 
 print('Total:\t\t', np.round(time.time() - start, 1), 's')

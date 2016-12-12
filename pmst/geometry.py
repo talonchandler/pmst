@@ -31,7 +31,7 @@ __device__ Point subtract(struct Point p1, struct Point p2) {
     return out;
 }
 
-__device__ Point scale(struct Point p1, float s) {
+__device__ Point scale(struct Point p1, double s) {
     Point out = {s*p1.x, s*p1.y, s*p1.z};
     return out;
 }
@@ -57,6 +57,17 @@ __device__ Point intersect(struct Ray r, struct Plane p) {
     Point l = subtract(r.r1, r.r0);
     double d = dot(subtract(p.c, r.r0), p.n)/dot(l, p.n);
     Point out = add(scale(l, d), r.r0);  // Intersection point
+    return out;
+}
+
+__device__ Point projectPointToPlane(struct Point r, struct Plane p) {
+    // Double check that p.n is the unit normal (from origin not c)
+    // http://math.stackexchange.com/a/445015/357869
+    Point no = subtract(p.n, p.c);
+    
+    double d = dot(subtract(r, p.c), p.n);
+    printf("XXX: %lf \\n", d);
+    Point out = subtract(r, scale(p.n, d));
     return out;
 }
 
